@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Türkiye için nöbetçi eczane bulma uygulaması — web + PWA",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "dev": "vite",
@@ -27,7 +27,8 @@
     "check": "npm run lint && npm run test && npm run build && wrangler deploy --dry-run",
     "hash-password": "node scripts/hash-password.mjs",
     "deploy": "vite build && wrangler deploy",
-    "scrape": "node scripts/scrape-edevlet.mjs"
+    "scrape": "node scripts/scrape-eczaneler.mjs",
+    "scrape:edevlet": "node scripts/scrape-edevlet.mjs"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.0",

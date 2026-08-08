@@ -169,6 +169,9 @@ export interface paths {
          *     O gün için daha önce yazılmış `source='edevlet'` nöbetleri silinip yeniden
          *     yazılır — böylece kaynaktan çıkarılan bir eczane bizde asılı kalmaz.
          *     `source='manual'` nöbetlere dokunulmaz.
+         *
+         *     `edevlet` değeri kaynağın adı DEĞİL, "otomatik çekim" kovasının adıdır;
+         *     elle girilenden ayırır. Gerekçe: `docs/adr/007-eczaneler-gen-tr-kaynagi.md`
          */
         post: operations["importDuties"];
         delete?: never;
@@ -187,7 +190,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * e-Devlet çekimini elle tetikle
+         * Çekimi elle tetikle
          * @description Çekim Cloudflare'in **dışında** koşar (GitHub Actions). Bu uç yalnızca
          *     `repository_dispatch` çağrısı yapar — tek subrequest, HTML ayrıştırma yok.
          *     Gerekçe: ücretsiz planda invocation başına 10 ms CPU / 50 dış subrequest

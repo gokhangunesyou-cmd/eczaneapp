@@ -7,6 +7,11 @@ design/nobetci-eczane.html
 src/shared/api-types.d.ts
 worker-configuration.d.ts
 
+# Kaynaktan olduğu gibi alınmış yanıtlar. Testin değeri BİRE BİR aynı olmalarında:
+# biçimlendirilirse ayrıştırıcı gerçek HTML'e değil, bizim düzelttiğimize karşı
+# test edilir ve kaynak bozulduğunda test yine geçer.
+tests/fixtures/
+
 # Build ve önbellek
 dist/
 coverage/

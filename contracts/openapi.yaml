@@ -263,6 +263,9 @@ paths:
         O gün için daha önce yazılmış `source='edevlet'` nöbetleri silinip yeniden
         yazılır — böylece kaynaktan çıkarılan bir eczane bizde asılı kalmaz.
         `source='manual'` nöbetlere dokunulmaz.
+
+        `edevlet` değeri kaynağın adı DEĞİL, "otomatik çekim" kovasının adıdır;
+        elle girilenden ayırır. Gerekçe: `docs/adr/007-eczaneler-gen-tr-kaynagi.md`
       security: [{ sessionCookie: [] }]
       requestBody:
         required: true
@@ -287,7 +290,7 @@ paths:
     post:
       tags: [admin]
       operationId: triggerScrape
-      summary: e-Devlet çekimini elle tetikle
+      summary: Çekimi elle tetikle
       description: |
         Çekim Cloudflare'in **dışında** koşar (GitHub Actions). Bu uç yalnızca
         `repository_dispatch` çağrısı yapar — tek subrequest, HTML ayrıştırma yok.

@@ -53,7 +53,8 @@ export function ScrapeTab({ cityCode, cityName }: { cityCode: number; cityName: 
     setError(null);
     setNotice(null);
     try {
-      await adminTriggerScrape(scope === 'tum' ? 'tum' : String(cityCode), 'ikisi');
+      // Kaynak yalnızca bugünü veriyor (ADR-007); "yarın" diye bir sorgusu yok.
+      await adminTriggerScrape(scope === 'tum' ? 'tum' : String(cityCode), 'bugun');
       setNotice(
         'Çekim başlatıldı. Sonuç birkaç dakika sürer; bittiğinde aşağıdaki listede görünür.',
       );
@@ -96,8 +97,8 @@ export function ScrapeTab({ cityCode, cityName }: { cityCode: number; cityName: 
               padding: '0 var(--s-14)',
             }}
           >
-            <option value="tum">81 il · bugün + yarın</option>
-            <option value="il">{cityName} · bugün + yarın</option>
+            <option value="tum">81 il · bugün</option>
+            <option value="il">{cityName} · bugün</option>
           </select>
 
           <button
@@ -106,7 +107,7 @@ export function ScrapeTab({ cityCode, cityName }: { cityCode: number; cityName: 
             disabled={busy}
             onClick={() => void trigger()}
           >
-            {busy ? 'Başlatılıyor…' : 'e-Devlet çekimini tetikle'}
+            {busy ? 'Başlatılıyor…' : 'Çekimi şimdi tetikle'}
           </button>
         </div>
       </div>

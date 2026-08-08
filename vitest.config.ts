@@ -25,7 +25,13 @@ export default defineConfig({
           name: 'app',
           environment: 'jsdom',
           globals: true,
-          include: ['src/app/**/*.test.{ts,tsx}', 'src/shared/**/*.test.ts'],
+          // Çekim komutunun ayrıştırıcısı da burada koşar: Worker'a girmiyor,
+          // ağa çıkmıyor, kaydedilmiş gerçek HTML'e karşı çalışıyor (ADR-007).
+          include: [
+            'src/app/**/*.test.{ts,tsx}',
+            'src/shared/**/*.test.ts',
+            'scripts/**/*.test.mjs',
+          ],
           setupFiles: ['./tests/setup-app.ts'],
           restoreMocks: true,
         },
