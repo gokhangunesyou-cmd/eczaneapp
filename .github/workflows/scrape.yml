@@ -1,0 +1,79 @@
+# Günlük nöbetçi eczane çekimi (ADR-006).
+#
+# Çekim Cloudflare'in DIŞINDA koşar. Gerekçe: ücretsiz Workers planında
+# invocation başına 10 ms CPU ve 50 dış subrequest var; 81 ilin HTML'ini
+# ayrıştırmak bu sınıra sığmaz. Worker yalnızca yazma ucunu (/api/admin/import)
+# ve koşu defterini (/api/admin/scrape/runs) sunar.
+#
+# Üç tetikleme yolu:
+#   schedule           → her gün 06:00 ve 12:00 TRT
+#   workflow_dispatch  → Actions sekmesinden elle
+#   repository_dispatch→ panelin "e-Devlet çekimini tetikle" düğmesi
+#
+# Gerekli repo secret'ları:  API_URL, ADMIN_USERNAME, ADMIN_PASSWORD
+
+name: scrape
+
+on:
+  schedule:
+    # UTC. Türkiye kalıcı UTC+3, yaz saati yok.
+    # 03:00Z = 06:00 TRT → nöbet 08:00'de dönmeden önce bugünün listesi hazır.
+    # 09:00Z = 12:00 TRT → yarının listesi kaynakta yayınlandıktan sonra.
+    - cron: "0 3 * * *"
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: '"tum" ya da plaka kodu'
+        required: false
+        default: "tum"
+      days:
+        description: "bugun | yarin | ikisi"
+        required: false
+        default: "ikisi"
+  repository_dispatch:
+    types: [scrape]
+
+# Aynı anda iki çekim koşmasın — kaynağa çift yük binmesin, içe aktarma
+# birbirini ezmesin.
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    # 81 il × 2 gün ≈ 5 dk; koordinat backfill'i olan ilk günlerde ~15 dk.
+    # Takılırsa kaynağı meşgul etmesin diye tavan koyulur.
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Çekimi çalıştır
+        env:
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          # Panel düğmesinden gelen istekte kapsam client_payload'da taşınır;
+          # zamanlanmış koşuda ikisi de varsayılana düşer.
+          SCOPE: ${{ github.event.client_payload.scope || inputs.scope || 'tum' }}
+          DAYS: ${{ github.event.client_payload.days || inputs.days || 'ikisi' }}
+        run: |
+          npm run scrape -- "$SCOPE" "$DAYS" --api "${{ secrets.API_URL }}"
+        # Çıkış kodu 2 = kısmi başarı (bazı il-günler atlandı). Veri yazıldı,
+        # koşu kaydı da yazıldı; iş akışını kırmızıya boyamaya değmez ama
+        # görünür olsun diye özet basılır.
+        continue-on-error: true
+        id: run
+
+      - name: Kısmi başarıyı bildir
+        if: steps.run.outcome == 'failure'
+        run: |
+          echo "::warning::Çekim kısmi tamamlandı. Panel → Çekim sekmesinden koşu kayıtlarına bak."

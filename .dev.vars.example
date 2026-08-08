@@ -1,0 +1,116 @@
+# .dev.vars.example — şablon. Gerçek değer İÇERMEZ ve git'e girer.
+#
+# KULLANIM
+#   1. Bu dosyayı `.dev.vars` olarak kopyala:   cp .dev.vars.example .dev.vars
+#   2. Değerleri kendi ortamına göre doldur.
+#   3. `.dev.vars` .gitignore'da — asla commit edilmez, asla paylaşılmaz.
+#
+# `wrangler dev` bu dosyayı okur ve değerleri Worker'ın `env` nesnesine enjekte eder.
+# Production'da aynı değişkenler Cloudflare Secret'larından gelir:
+#   npx wrangler secret put DEGISKEN_ADI      ← bu komutu SEN çalıştırırsın
+# Kod ikisini ayırt etmez; yalnızca `c.env.DEGISKEN_ADI` okur.
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ADMIN PANELİ
+# ══════════════════════════════════════════════════════════════════════════
+
+# Yönetici kullanıcı adı. Geliştirmede `admin`, production'da farklı bir şey seç.
+ADMIN_USERNAME="admin"
+
+# Yönetici parolasının PBKDF2-SHA256 hash'i. DÜZ PAROLA YAZMA.
+#
+# Üretmek için:
+#     node scripts/hash-password.mjs            # parolayı sorar
+#     node scripts/hash-password.mjs 'admin'    # doğrudan verir
+#
+# Biçim:  pbkdf2$sha256$<iterasyon>$<salt-base64>$<hash-base64>
+#
+# Neden hash: (1) aynı doğrulama kodu dev ve prod'da birebir koşsun,
+# (2) bu dosya sızarsa parola değil hash sızsın, (3) hash üretme aracı
+# ertelenmesin. bcrypt/argon2 kullanılmaz — Workers runtime'ında çalışmazlar.
+#
+# Aşağıdaki örnek `admin` parolasının hash'idir. KENDİ hash'ini üretip değiştir;
+# bu satırı olduğu gibi bırakma.
+ADMIN_PASSWORD_HASH="pbkdf2$sha256$210000$ORNEK_SALT_DEGISTIR==$ORNEK_HASH_DEGISTIR="
+
+# Oturum çerezini imzalayan HMAC anahtarı. Rastgele ve uzun olmalı.
+# Üretmek için:  openssl rand -base64 32
+# Production'da MUTLAKA farklı bir değer kullan.
+SESSION_SECRET="degistir-rastgele-32-byte-base64"
+
+# Oturum ömrü (saniye). Varsayılan 8 saat.
+SESSION_TTL_SECONDS="28800"
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ÇEKİM TETİKLEME (ADR-006)
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Paneldeki "e-Devlet çekimini tetikle" düğmesi GitHub Actions'ta koşan
+# `.github/workflows/scrape.yml` iş akışını `repository_dispatch` ile başlatır.
+# Worker'ın yaptığı tek şey bu: bir POST. Çekimin kendisi Cloudflare'de KOŞMAZ
+# (ücretsiz planda 10 ms CPU / 50 subrequest sınırı yetmez).
+#
+# İkisi de boşsa uç 503 döner ve düğme "yapılandırılmamış" der; çekim yine de
+# elle `npm run scrape` ile ya da Actions sekmesinden koşturulabilir.
+
+# Çekimi barındıran depo: "kullanici/depo"
+GITHUB_REPO=""
+
+# Fine-grained personal access token. YALNIZCA bu depoya erişsin ve YALNIZCA
+# "Contents: read and write" izni olsun — repository_dispatch bunu ister.
+# Üretim: GitHub → Settings → Developer settings → Personal access tokens
+GITHUB_DISPATCH_TOKEN=""
+
+# NOT: Çekim komutunun kendisi panele ADMIN_USERNAME + ADMIN_PASSWORD ile
+# giriyor. Bunlar Worker secret'ı DEĞİL, GitHub repo secret'ıdır:
+#   GitHub → Settings → Secrets and variables → Actions
+#   API_URL, ADMIN_USERNAME, ADMIN_PASSWORD
+# ADMIN_PASSWORD orada DÜZ PAROLADIR (hash değil) — panele giriş yapıyor.
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# VERİ KAYNAĞI — ŞU AN PASİF  (ADR-004: veri panelden giriliyor)
+# ══════════════════════════════════════════════════════════════════════════
+
+# Hangi adaptör çalışacak.
+#   fixture     → ağa çıkmaz, tests/fixtures altındaki sabit veriyi kullanır (varsayılan)
+#   antalya-eo  → Antalya Eczacı Odası XML servisi (gerçek veri)
+PHARMACY_SOURCE="fixture"
+
+# Antalya Eczacı Odası XML servisi kimlik bilgileri.
+# Başvuru: info@antalyaeo.org.tr adresine form gönderilir, oda kullanıcı adı/parola verir.
+# UYARI: Servis IP + kullanıcı adı başına GÜNDE 10 SORGU izin veriyor ve tüm erişimleri
+# logluyor. Bu yüzden istek anında değil, yalnızca cron ile çekilir.
+ANTALYA_EO_USERNAME=""
+ANTALYA_EO_PASSWORD=""
+
+# Kaynak servisin taban URL'i. Normalde değiştirmeye gerek yok; test/staging için var.
+ANTALYA_EO_BASE_URL="https://www.antalyaeo.org.tr/nobetcieczaneler.xml"
+
+# Kaynağın günlük istek kotası. Elle senkron tetiklemede sayaç bunun üstüne çıkmaz.
+SOURCE_DAILY_QUOTA="10"
+
+
+# NOT: Harita (VITE_*) değişkenleri BU DOSYADA DEĞİL, `.env.example` içinde.
+# Onlar istemci paketine gömülür ve gizli değildir; Vite okur, wrangler değil.
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# UYGULAMA
+# ══════════════════════════════════════════════════════════════════════════
+
+# MVP'de desteklenen il (plaka kodu). 7 = Antalya.
+SUPPORTED_CITY_CODE="7"
+
+# Nöbet rotasyon saati (TRT, 24 saat). Kaynak her sabah 08:00'de listeyi değiştiriyor.
+# Türkiye kalıcı UTC+3, yaz saati uygulaması yok.
+DUTY_ROTATION_HOUR_TRT="8"
+
+# API yanıtlarının edge cache ömrü (saniye), tavan değer.
+# Gerçek TTL bir sonraki rotasyona kalan süre ile bunun küçüğüdür.
+CACHE_MAX_TTL_SECONDS="900"
+
+# Log ayrıntısı: debug | info | warn | error
+LOG_LEVEL="debug"

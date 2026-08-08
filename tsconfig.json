@@ -1,0 +1,10 @@
+{
+  // Kök yapılandırma yalnızca referans tutar; gerçek ayarlar alt dosyalarda.
+  // `npm run typecheck` → `tsc -b` üç projeyi birden derler.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.worker.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}

@@ -1,0 +1,18 @@
+# Bizim kodumuz değil — Claude Design runtime'ı ve onaylı tasarım çıktısı.
+# Tasarım dosyası tek doğru kaynaktır; biçimlendirilerek değiştirilmez.
+design/support.js
+design/nobetci-eczane.html
+
+# Üretilen dosyalar
+src/shared/api-types.d.ts
+worker-configuration.d.ts
+
+# Build ve önbellek
+dist/
+coverage/
+node_modules/
+.wrangler/
+test-results/
+playwright-report/
+
+package-lock.json

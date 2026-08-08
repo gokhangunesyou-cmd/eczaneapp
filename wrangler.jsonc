@@ -1,0 +1,77 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  "name": "nobetci-eczane",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2025-01-09",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // ─── Statik varlıklar ───────────────────────────────────────────────────
+  // Tek Worker hem API'yi hem arayüzü servis eder — ayrı bir Pages projesi yok.
+  // Statik varlık istekleri Cloudflare'da ÜCRETSİZ ve SINIRSIZ; yalnızca Worker'ı
+  // uyandıran istekler günlük 100.000 kotasından düşer.
+  // Ücretsiz plan sınırları: 20.000 dosya, dosya başına 25 MiB.
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    // SPA: bulunamayan yollar index.html'e düşer, /api/* Worker'a gider.
+    "not_found_handling": "single-page-application",
+    // run_worker_first KULLANILMIYOR — kullanılsaydı her statik istek de
+    // Worker'ı uyandırır ve günlük kotadan düşerdi.
+    "run_worker_first": ["/api/*"],
+  },
+
+  // ─── D1 ─────────────────────────────────────────────────────────────────
+  // database_id ilk kurulumda doldurulur (KULLANICI çalıştırır):
+  //   npx wrangler d1 create nobetci-eczane
+  // Ücretsiz plan: 10 db/hesap · 500 MB/db · 5 GB toplam
+  //                5.000.000 satır okuma/gün · 100.000 satır yazma/gün
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nobetci-eczane",
+      "database_id": "2dec1a05-1f7e-450e-9118-58b14dfda473",
+      "migrations_dir": "migrations",
+    },
+  ],
+
+  // ─── Özel alan adı ──────────────────────────────────────────────────────
+  // Zone `becayisler.com` Cloudflare'de olmalı. Bu kayıt deploy sırasında
+  // DNS'i ve route'u otomatik kurar — panelden elle CNAME eklemeye gerek yok.
+  "routes": [
+    {
+      "pattern": "nobetcieczane.becayisler.com",
+      "custom_domain": true,
+    },
+  ],
+
+  // ─── Cron Trigger'lar ───────────────────────────────────────────────────
+  // YOK. Veri panelden giriliyor (ADR-004), çekilecek dış kaynak olmadığı için
+  // zamanlanmış iş de yok. Otomatik besleme geri gelirse buraya eklenecek:
+  //   "triggers": { "crons": ["5 5 * * *"] }   → 08:05 TRT (Türkiye kalıcı UTC+3)
+  // Ücretsiz plan: hesap başına 5 cron trigger.
+
+  // ─── Gizli olmayan yapılandırma ─────────────────────────────────────────
+  // Secret'lar BURAYA YAZILMAZ. Onlar .dev.vars (yerel) ve
+  // `wrangler secret put` (production) üzerinden gelir. Bkz. .dev.vars.example
+  // Panelden çekim tetikleme (ADR-006) iki değer ister ve ikisi de BURAYA
+  // YAZILMAZ: GITHUB_REPO ("kullanici/depo") ve GITHUB_DISPATCH_TOKEN.
+  // `wrangler secret put` ile girilir. Yoksa uç 503 döner, çekim elle koşar.
+  "vars": {
+    "SUPPORTED_CITY_CODE": "7",
+    "DUTY_ROTATION_HOUR_TRT": "8",
+    "CACHE_MAX_TTL_SECONDS": "900",
+    "SOURCE_DAILY_QUOTA": "10",
+    "ANTALYA_EO_BASE_URL": "https://www.antalyaeo.org.tr/nobetcieczaneler.xml",
+    "LOG_LEVEL": "info",
+  },
+
+  // ─── Gözlemlenebilirlik ─────────────────────────────────────────────────
+  // Ücretsiz planda da açık; örnekleme oranı 1 = tüm istekler.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+
+  "upload_source_maps": false,
+}

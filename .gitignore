@@ -1,0 +1,48 @@
+# --- Secret'lar — asla commit edilmez -------------------------------------
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+
+# --- Bağımlılıklar ---------------------------------------------------------
+node_modules/
+
+# --- Cloudflare / Wrangler -------------------------------------------------
+.wrangler/
+.mf/
+wrangler.toml.bak
+
+# --- Claude Code -----------------------------------------------------------
+.claude/settings.local.json
+
+# --- Build çıktıları -------------------------------------------------------
+dist/
+build/
+*.tsbuildinfo
+
+# --- Test ------------------------------------------------------------------
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# --- Araç önbellekleri -----------------------------------------------------
+.vite/
+.eslintcache
+.cache/
+
+# --- İşletim sistemi / editör ----------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Loglar ----------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-error.log*

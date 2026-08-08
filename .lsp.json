@@ -1,0 +1,22 @@
+{
+  "servers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "extensions": [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"],
+      "rootMarkers": ["tsconfig.json", "package.json"],
+      "initializationOptions": {
+        "preferences": {
+          "importModuleSpecifierPreference": "relative",
+          "includeInlayParameterNameHints": "literals",
+          "includeCompletionsForModuleExports": true,
+          "quotePreference": "single"
+        },
+        "tsserver": {
+          "logVerbosity": "off",
+          "maxTsServerMemory": 3072
+        }
+      }
+    }
+  }
+}

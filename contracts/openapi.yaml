@@ -1,0 +1,1111 @@
+openapi: 3.1.0
+
+info:
+  title: Nöbetçi Eczane API
+  version: 0.1.0
+  description: |
+    Nöbetçi eczane bulma uygulamasının API sözleşmesi.
+
+    **Bu dosya tek doğru kaynaktır.** Frontend tipleri buradan üretilir:
+    `npm run gen:types` → `src/shared/api-types.d.ts`
+
+    Elle tip yazılmaz. Önce bu dosya değişir, sonra tipler üretilir, sonra kod yazılır.
+
+    Veri kaynağı ve tazeleme davranışı için: `docs/adr/001-veri-kaynagi.md`,
+    `docs/adr/003-veri-tazeleme.md`
+
+servers:
+  - url: http://localhost:8787
+    description: Yerel geliştirme (wrangler dev)
+  - url: https://nobetci-eczane.workers.dev
+    description: Production
+
+tags:
+  - name: public
+    description: Kimlik doğrulaması gerektirmeyen uçlar
+  - name: admin
+    description: Oturum çerezi gerektiren yönetim uçları
+
+paths:
+  /api/health:
+    get:
+      tags: [public]
+      operationId: getHealth
+      summary: Servis ve veri tazeliği durumu
+      description: |
+        Uptime kontrolü ve son senkron durumu. Veri bayatsa `status` `degraded` olur;
+        servis yine de çalışmaya devam eder.
+      responses:
+        "200":
+          description: Servis ayakta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+
+  /api/districts:
+    get:
+      tags: [public]
+      operationId: listDistricts
+      summary: İlçe listesi ve ilçe başına nöbetçi sayısı
+      description: |
+        Konum izni reddedildiğinde gösterilen ilçe seçim ekranını besler.
+        Nöbetçi sayısı o an nöbette olan eczaneleri sayar.
+      parameters:
+        - $ref: "#/components/parameters/CityCode"
+      responses:
+        "200":
+          description: İlçe listesi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DistrictList" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/pharmacies/on-duty:
+    get:
+      tags: [public]
+      operationId: listOnDutyPharmacies
+      summary: Nöbetçi eczaneler
+      description: |
+        İki kullanım biçimi vardır ve **tam olarak biri** seçilmelidir:
+
+        - **Konuma göre:** `lat` + `lng` verilir. Sonuç mesafeye göre artan sıralanır,
+          her kayıtta `distanceM` ve `etaMin` bulunur.
+        - **İlçeye göre:** `district` verilir. Sonuç eczane adına göre sıralanır,
+          `distanceM` ve `etaMin` `null` olur.
+
+        `etaMin` haversine mesafesinden türetilmiş **tahmindir**; gerçek trafik verisi
+        içermez. Gerekçe: `docs/adr/002-harita-yol-tarifi.md`
+
+        Nöbeti bitmiş eczaneler varsayılan olarak dönmez; `includeExpired=true` ile
+        `status: "closed"` şeklinde döner (tasarımdaki soluk satırlar).
+
+        **İl konumdan çözülür.** `lat`/`lng` verilip `city` verilmezse sunucu en yakın
+        eczanenin ilini seçer; hangi ili seçtiği yanıtın `cityCode` alanındadır.
+        Kullanıcı ili elle değiştirdiğinde `city` gönderilir ve konumdan çözüm yapılmaz.
+
+        Veri o il için henüz çekilmemişse `items` boş ve `stale` `true` döner —
+        **hata değildir**, arayüz boş durum ekranını gösterir.
+      parameters:
+        - name: lat
+          in: query
+          description: Kullanıcı enlemi. `lng` ile birlikte verilir, `district` ile birlikte verilemez.
+          schema: { type: number, format: double, minimum: 35.8, maximum: 42.2 }
+          example: 36.8969
+        - name: lng
+          in: query
+          description: Kullanıcı boylamı. `lat` ile birlikte verilir, `district` ile birlikte verilemez.
+          schema: { type: number, format: double, minimum: 25.6, maximum: 44.9 }
+          example: 30.7133
+        - name: district
+          in: query
+          description: TÜİK ilçe kodu. `lat`/`lng` ile birlikte verilemez.
+          schema: { type: string, pattern: "^[0-9]{4}$" }
+          example: "0715"
+        - $ref: "#/components/parameters/CityCode"
+        - name: limit
+          in: query
+          description: Döndürülecek azami kayıt sayısı.
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - name: includeExpired
+          in: query
+          description: Nöbeti bitmiş eczaneleri de döndür.
+          schema: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Nöbetçi eczane listesi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PharmacyList" }
+              examples:
+                konuma-gore:
+                  summary: Konuma göre, taze veri
+                  value:
+                    stale: false
+                    dataAsOf: "2026-08-07T05:05:12Z"
+                    nextRotationAt: "2026-08-08T05:00:00Z"
+                    cityCode: 7
+                    items:
+                      - id: "antalya-eo:8680001234567"
+                        name: "Deniz Eczanesi"
+                        phone: "+902422371414"
+                        address: "Tahılpazarı Mah. Ali Çetinkaya Cad. No:41/A"
+                        districtCode: "0715"
+                        districtName: "Muratpaşa"
+                        lat: 36.8862
+                        lng: 30.7056
+                        distanceM: 1240
+                        etaMin: 4
+                        dutyStart: "2026-08-07T05:00:00Z"
+                        dutyEnd: "2026-08-08T05:00:00Z"
+                        status: "open"
+                        minutesUntilClose: 318
+                bayat:
+                  summary: Senkron başarısız, dünkü veri servis ediliyor
+                  value:
+                    stale: true
+                    dataAsOf: "2026-08-06T05:05:09Z"
+                    nextRotationAt: "2026-08-08T05:00:00Z"
+                    cityCode: 7
+                    items: []
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/admin/session:
+    post:
+      tags: [admin]
+      operationId: adminLogin
+      summary: Yönetici girişi
+      description: |
+        Başarılı girişte `HttpOnly; Secure; SameSite=Strict` oturum çerezi kurulur.
+        Kimlik bilgileri kodda değil, ortam değişkenlerinden gelir; parola PBKDF2 ile
+        hash'lenmiş saklanır. Karşılaştırma sabit zamanlıdır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              additionalProperties: false
+              properties:
+                username: { type: string, minLength: 1, maxLength: 64 }
+                password: { type: string, minLength: 1, maxLength: 256 }
+      responses:
+        "204":
+          description: Giriş başarılı, oturum çerezi kuruldu
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+              example: "session=…; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401":
+          description: Kimlik bilgileri hatalı
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+    delete:
+      tags: [admin]
+      operationId: adminLogout
+      summary: Oturumu kapat
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204": { description: Oturum kapatıldı }
+
+  /api/cities:
+    get:
+      tags: [public]
+      operationId: listCities
+      summary: Desteklenen il listesi
+      description: |
+        Çekim komutu il argümanını (plaka kodu ya da slug) buradan çözer.
+        `districtCount` 0 ise o il için henüz hiç veri çekilmemiş demektir.
+      responses:
+        "200":
+          description: İl listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                additionalProperties: false
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/City" }
+
+  /api/admin/known-coords:
+    get:
+      tags: [admin]
+      operationId: listKnownCoords
+      summary: Koordinatı zaten bilinen eczane slug'ları
+      description: |
+        Çekim komutu bunu kullanarak **gereksiz harita isteği yapmaz** (ADR-005).
+        Verilen slug'lardan hangilerinin lat/lng'si dolu, onu döner.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 81 }
+        - name: slugs
+          in: query
+          required: true
+          description: Virgülle ayrılmış slug listesi.
+          schema: { type: string, maxLength: 20000 }
+      responses:
+        "200":
+          description: Koordinatı bilinen slug'lar
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [slugs]
+                additionalProperties: false
+                properties:
+                  slugs:
+                    type: array
+                    items: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/admin/import:
+    post:
+      tags: [admin]
+      operationId: importDuties
+      summary: Çekilen nöbet listesini topluca yaz
+      description: |
+        Tek çağrıda: bilinmeyen ilçeleri ekler, eczaneleri slug'a göre upsert eder,
+        o güne ait nöbetleri yazar.
+
+        **Elle girilmiş koordinat korunur:** `coordSource = 'manual'` olan eczanenin
+        lat/lng'si bu uçtan ASLA ezilmez (ADR-005).
+
+        O gün için daha önce yazılmış `source='edevlet'` nöbetleri silinip yeniden
+        yazılır — böylece kaynaktan çıkarılan bir eczane bizde asılı kalmaz.
+        `source='manual'` nöbetlere dokunulmaz.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportRequest" }
+      responses:
+        "200":
+          description: Yazıldı
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: İl desteklenmiyor
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/admin/scrape/trigger:
+    post:
+      tags: [admin]
+      operationId: triggerScrape
+      summary: e-Devlet çekimini elle tetikle
+      description: |
+        Çekim Cloudflare'in **dışında** koşar (GitHub Actions). Bu uç yalnızca
+        `repository_dispatch` çağrısı yapar — tek subrequest, HTML ayrıştırma yok.
+        Gerekçe: ücretsiz planda invocation başına 10 ms CPU / 50 dış subrequest
+        sınırı 81 ilin ayrıştırmasına yetmez (ADR-006).
+
+        Kaynağa saygı gereği **10 dakikada bir** tetiklenebilir; daha sık denemede
+        `429` döner. Sonuç anında gelmez: iş akışı birkaç dakika sonra
+        `POST /api/admin/scrape/runs` ile koşu kayıtlarını yazar.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        description: Alanların hepsi varsayılanlı; boş gövde `{}` gönderilebilir.
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScrapeTriggerInput" }
+      responses:
+        "202":
+          description: İş akışı tetiklendi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScrapeTriggerResult" }
+              example:
+                dispatchedAt: "2026-08-08T11:12:03Z"
+                scope: "tum"
+                days: "ikisi"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "502":
+          description: GitHub'a ulaşılamadı veya dispatch reddedildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "503":
+          description: Tetikleme yapılandırılmamış (`GITHUB_DISPATCH_TOKEN` / `GITHUB_REPO` yok)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/admin/scrape/runs:
+    get:
+      tags: [admin]
+      operationId: listScrapeRuns
+      summary: Son çekim koşuları
+      description: |
+        Panelin çekim sekmesi bunu gösterir: hangi il, hangi gün, ne sonuç verdi.
+        En yeni koşu başta döner.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: city
+          in: query
+          description: Plaka kodu. Verilmezse tüm iller.
+          schema: { type: integer, minimum: 1, maximum: 81 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        "200":
+          description: Koşu listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                additionalProperties: false
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ScrapeRun" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [admin]
+      operationId: recordScrapeRun
+      summary: Bir çekim koşusunun sonucunu yaz
+      description: |
+        Çekim komutu her il-gün bitiminde bunu çağırır. Kayıt **tamamlanmış** koşuyu
+        anlatır; `outcome` alanı ne olduğunu söyler. Sessiz bozulma buradan görülür:
+        `rowsFound` düşerse ya da `error` birikirse kaynak değişmiş demektir.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScrapeRunInput" }
+      responses:
+        "201":
+          description: Koşu kaydedildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScrapeRun" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/admin/me:
+    get:
+      tags: [admin]
+      operationId: getAdminMe
+      summary: Oturum geçerli mi
+      description: Panel açılışında oturumun hâlâ geçerli olduğunu doğrulamak için.
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Oturum geçerli
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [username, expiresAt]
+                additionalProperties: false
+                properties:
+                  username: { type: string }
+                  expiresAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/admin/pharmacies:
+    get:
+      tags: [admin]
+      operationId: listAdminPharmacies
+      summary: Eczane kayıtları
+      description: |
+        Panelin eczane defteri. Nöbet ataması ayrı bir kayıttır (`/api/admin/duties`);
+        buradaki liste eczanenin kendisidir, nöbette olup olmadığından bağımsızdır.
+
+        Veri 81 ili kapsadığı için liste **her zaman sayfalıdır**: `total` toplam
+        eşleşmeyi, `items` bu sayfayı verir.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: q
+          in: query
+          description: Ad veya adres içinde arama.
+          schema: { type: string, maxLength: 120 }
+        - name: city
+          in: query
+          description: Plaka kodu. Verilmezse tüm iller.
+          schema: { type: integer, minimum: 1, maximum: 81 }
+        - name: district
+          in: query
+          schema: { type: string, pattern: "^[0-9]{4}$" }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        "200":
+          description: Eczane listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                additionalProperties: false
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminPharmacy" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [admin]
+      operationId: createPharmacy
+      summary: Eczane ekle
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PharmacyInput" }
+      responses:
+        "201":
+          description: Oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminPharmacy" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409":
+          description: Aynı ad ve ilçede kayıt zaten var
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/admin/pharmacies/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    patch:
+      tags: [admin]
+      operationId: updatePharmacy
+      summary: Eczane güncelle
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PharmacyInput" }
+      responses:
+        "200":
+          description: Güncellendi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminPharmacy" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [admin]
+      operationId: deletePharmacy
+      summary: Eczane sil
+      description: Eczaneye bağlı nöbet kayıtları da silinir.
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204": { description: Silindi }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/admin/duties:
+    get:
+      tags: [admin]
+      operationId: listDuties
+      summary: Nöbet atamaları
+      description: |
+        Takvimde bir güne tıklandığında açılan liste. 81 ilde bir günün nöbeti
+        binlerce satır olabildiği için sonuç **sayfalıdır** ve pratikte il
+        filtresiyle kullanılır.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: date
+          in: query
+          description: "Nöbet günü (YYYY-MM-DD, TRT). Verilmezse bugün."
+          schema: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        - name: city
+          in: query
+          description: Plaka kodu. Verilmezse tüm iller.
+          schema: { type: integer, minimum: 1, maximum: 81 }
+        - name: district
+          in: query
+          schema: { type: string, pattern: "^[0-9]{4}$" }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        "200":
+          description: O güne ait nöbet atamaları
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [date, total, items]
+                additionalProperties: false
+                properties:
+                  date: { type: string }
+                  total: { type: integer, description: Filtreye uyan toplam kayıt. }
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/DutyShift" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [admin]
+      operationId: createDuty
+      summary: Nöbet ata
+      description: |
+        Nöbet penceresi `date` gününün 08:00 TRT'sinden ertesi gün 08:00 TRT'sine kadardır.
+        Aynı eczaneye aynı gün için ikinci atama yapılamaz.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DutyInput" }
+      responses:
+        "201":
+          description: Atandı
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DutyShift" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Bu eczane o gün için zaten nöbetçi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/admin/duties/calendar:
+    get:
+      tags: [admin]
+      operationId: getDutyCalendar
+      summary: Aylık nöbet takvimi
+      description: |
+        Panelin takvim ızgarasını besler: ayın her günü için nöbet sayısı ve
+        kaynağa göre dağılım. **Eksik gün buradan görülür** — sayısı 0 olan gün
+        ızgarada işaretlenir.
+
+        Yalnızca kayıt bulunan günler döner; boş günler dizide yer almaz.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: month
+          in: query
+          required: true
+          description: "Ay (YYYY-MM, TRT takvimi)."
+          schema: { type: string, pattern: "^[0-9]{4}-[0-9]{2}$" }
+          example: "2026-08"
+        - name: city
+          in: query
+          description: Plaka kodu. Verilmezse tüm iller.
+          schema: { type: integer, minimum: 1, maximum: 81 }
+      responses:
+        "200":
+          description: Gün başına nöbet sayıları
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [month, cityCode, days]
+                additionalProperties: false
+                properties:
+                  month: { type: string, example: "2026-08" }
+                  cityCode: { type: [integer, "null"] }
+                  days:
+                    type: array
+                    items: { $ref: "#/components/schemas/CalendarDay" }
+              example:
+                month: "2026-08"
+                cityCode: 7
+                days:
+                  - date: "2026-08-08"
+                    count: 37
+                    edevletCount: 37
+                    manualCount: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/admin/duties/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    delete:
+      tags: [admin]
+      operationId: deleteDuty
+      summary: Nöbet atamasını kaldır
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204": { description: Silindi }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+
+  parameters:
+    CityCode:
+      name: city
+      in: query
+      description: |
+        Plaka kodu (81 ilin tamamı). `lat`/`lng` verildiğinde **gerekmez**: sunucu
+        ili konumdan çözer ve hangi ili seçtiğini yanıttaki `cityCode` ile bildirir.
+        Konum yoksa varsayılan 7 (Antalya).
+      schema: { type: integer, minimum: 1, maximum: 81, default: 7 }
+
+  responses:
+    BadRequest:
+      description: Geçersiz istek parametresi
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Oturum yok veya geçersiz
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Kayıt bulunamadı
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    TooManyRequests:
+      description: Çok fazla deneme
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          additionalProperties: false
+          properties:
+            code:
+              type: string
+              enum:
+                - bad_request
+                - unauthorized
+                - not_found
+                - city_not_supported
+                - rate_limited
+                - source_unavailable
+                - dispatch_failed
+                - not_configured
+                - internal
+            message:
+              type: string
+              description: Kullanıcıya gösterilebilir Türkçe mesaj.
+            details:
+              type: array
+              description: Alan bazlı doğrulama hataları.
+              items:
+                type: object
+                required: [path, message]
+                additionalProperties: false
+                properties:
+                  path: { type: string }
+                  message: { type: string }
+
+    Health:
+      type: object
+      required: [status, version, lastSyncAt, stale]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+          description: Bugünün verisi yoksa `degraded`.
+        version: { type: string, example: "0.1.0" }
+        lastSyncAt:
+          type: [string, "null"]
+          format: date-time
+          description: Son **başarılı** senkron zamanı.
+        stale:
+          type: boolean
+          description: Servis edilen veri bugünün rotasyonuna ait değil.
+
+    District:
+      type: object
+      required: [code, name, onDutyCount]
+      additionalProperties: false
+      properties:
+        code: { type: string, pattern: "^[0-9]{4}$", example: "0715" }
+        name: { type: string, example: "Muratpaşa" }
+        onDutyCount: { type: integer, minimum: 0, example: 6 }
+
+    DistrictList:
+      type: object
+      required: [cityCode, stale, dataAsOf, items]
+      additionalProperties: false
+      properties:
+        cityCode: { type: integer, example: 7 }
+        stale: { type: boolean }
+        dataAsOf: { type: [string, "null"], format: date-time }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/District" }
+
+    Pharmacy:
+      type: object
+      required:
+        [
+          id,
+          name,
+          phone,
+          address,
+          districtCode,
+          districtName,
+          lat,
+          lng,
+          distanceM,
+          etaMin,
+          dutyStart,
+          dutyEnd,
+          status,
+          minutesUntilClose,
+        ]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: "`{sourceKey}:{sourceId}` — kaynaklar arası çakışmayan kalıcı kimlik."
+          example: "antalya-eo:8680001234567"
+        name: { type: string, example: "Deniz Eczanesi" }
+        phone:
+          type: [string, "null"]
+          description: E.164 formatında. `tel:` bağlantısında doğrudan kullanılır.
+          example: "+902422371414"
+        address: { type: string }
+        districtCode: { type: string, pattern: "^[0-9]{4}$" }
+        districtName: { type: string }
+        lat:
+          type: [number, "null"]
+          description: Koordinat kaynaktan ayrı bir istekle geliyor; henüz bilinmiyor olabilir.
+        lng: { type: [number, "null"], format: double }
+        distanceM:
+          type: [integer, "null"]
+          description: Kuş uçuşu mesafe (metre). İlçeye göre sorguda `null`.
+        etaMin:
+          type: [integer, "null"]
+          description: |
+            **Tahmini** sürüş süresi (dakika). Mesafeden türetilir, trafik içermez.
+            Arayüzde `~` ile gösterilir. İlçeye göre sorguda `null`.
+        dutyStart: { type: string, format: date-time }
+        dutyEnd: { type: string, format: date-time }
+        status:
+          type: string
+          enum: [open, closing_soon, closed]
+          description: |
+            `closing_soon`: kapanışa 120 dakikadan az kaldı — tasarımda turuncu varyant.
+            `closed`: nöbet bitti — yalnızca `includeExpired=true` ile döner.
+        minutesUntilClose:
+          type: integer
+          description: Nöbetin bitmesine kalan dakika. Bitmişse negatif.
+
+    PharmacyList:
+      type: object
+      required: [stale, dataAsOf, nextRotationAt, cityCode, items]
+      additionalProperties: false
+      properties:
+        stale:
+          type: boolean
+          description: |
+            `true` ise veri bugünün rotasyonuna ait değil. Arayüz çevrimdışı/kayıtlı
+            bilgi bandını gösterir ve birincil aksiyonu "Ara" yapar.
+        dataAsOf:
+          type: [string, "null"]
+          format: date-time
+          description: Veriyi kaynaktan çeken son başarılı senkronun zamanı.
+        nextRotationAt:
+          type: string
+          format: date-time
+          description: Nöbetin döneceği bir sonraki an (her gün 08:00 TRT).
+        cityCode: { type: integer, example: 7 }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Pharmacy" }
+
+    City:
+      type: object
+      required: [code, name, slug, districtCount]
+      additionalProperties: false
+      properties:
+        code: { type: integer, example: 7 }
+        name: { type: string, example: "Antalya" }
+        slug: { type: string, example: "antalya" }
+        districtCount: { type: integer }
+
+    ImportItem:
+      type: object
+      required:
+        [slug, name, districtName, districtSlug, address, phone, dutyStart, dutyEnd, lat, lng]
+      additionalProperties: false
+      properties:
+        slug: { type: string, example: "antalya/akseki/murtici" }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        districtName: { type: string, minLength: 1, maxLength: 80 }
+        districtSlug: { type: string, minLength: 1, maxLength: 80 }
+        address: { type: string, minLength: 3, maxLength: 300 }
+        phone: { type: [string, "null"], maxLength: 32 }
+        dutyStart: { type: string, format: date-time }
+        dutyEnd: { type: string, format: date-time }
+        lat: { type: [number, "null"], minimum: 35.8, maximum: 42.2 }
+        lng: { type: [number, "null"], minimum: 25.6, maximum: 44.9 }
+        sourceStatus:
+          type: [string, "null"]
+          description: Kaynaktaki "Durumu" sütunu, ham hâliyle.
+
+    ImportRequest:
+      type: object
+      required: [cityCode, dutyDate, source, items]
+      additionalProperties: false
+      properties:
+        cityCode: { type: integer, minimum: 1, maximum: 81 }
+        dutyDate: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        source: { type: string, enum: [edevlet] }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ImportItem" }
+
+    ImportResult:
+      type: object
+      required:
+        [
+          districtsCreated,
+          pharmaciesCreated,
+          pharmaciesUpdated,
+          dutiesWritten,
+          dutiesRemoved,
+          coordsPreserved,
+        ]
+      additionalProperties: false
+      properties:
+        districtsCreated: { type: integer }
+        pharmaciesCreated: { type: integer }
+        pharmaciesUpdated: { type: integer }
+        dutiesWritten: { type: integer }
+        dutiesRemoved:
+          type: integer
+          description: Kaynaktan çıkarıldığı için silinen önceki edevlet nöbetleri.
+        coordsPreserved:
+          type: integer
+          description: Elle girildiği için korunan koordinat sayısı.
+
+    # ─── Panel şemaları (ADR-004) ──────────────────────────────────────────
+
+    PharmacyInput:
+      type: object
+      description: Eczane oluşturma ve güncelleme gövdesi. PATCH'te de tüm alanlar zorunludur.
+      required: [name, phone, address, districtCode, lat, lng]
+      # lat/lng birlikte null olabilir — koordinatı henüz bilinmeyen eczane.
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120, example: "Deniz Eczanesi" }
+        phone:
+          type: [string, "null"]
+          description: "Serbest biçimde girilebilir; sunucu E.164'e normalize eder."
+          maxLength: 32
+          example: "0242 237 14 14"
+        address: { type: string, minLength: 5, maxLength: 300 }
+        districtCode: { type: string, pattern: "^[0-9]{4}$", example: "0715" }
+        lat: { type: [number, "null"], format: double, minimum: 35.8, maximum: 42.2 }
+        lng: { type: [number, "null"], format: double, minimum: 25.6, maximum: 44.9 }
+        notes:
+          type: [string, "null"]
+          maxLength: 500
+          description: Yalnızca panelde görünür. Genel API'de dönmez.
+
+    AdminPharmacy:
+      type: object
+      required:
+        [
+          id,
+          slug,
+          name,
+          phone,
+          address,
+          districtCode,
+          districtName,
+          lat,
+          lng,
+          coordSource,
+          notes,
+          createdAt,
+          updatedAt,
+        ]
+      additionalProperties: false
+      properties:
+        id: { type: integer }
+        slug:
+          type: string
+          description: "Doğal anahtar: il/ilçe/eczane. Bkz. ADR-005."
+          example: "antalya/akseki/murtici"
+        name: { type: string }
+        phone: { type: [string, "null"] }
+        address: { type: string }
+        districtCode: { type: string }
+        districtName: { type: string }
+        lat: { type: [number, "null"], format: double }
+        lng: { type: [number, "null"], format: double }
+        coordSource:
+          type: string
+          enum: [edevlet, manual]
+          description: "`manual` ise çekim bu koordinatı ASLA ezmez."
+        notes: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    DutyInput:
+      type: object
+      required: [pharmacyId, date]
+      additionalProperties: false
+      properties:
+        pharmacyId: { type: integer, minimum: 1 }
+        date:
+          type: string
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: "Nöbetin başladığı gün (TRT). Pencere: o gün 08:00 → ertesi gün 08:00."
+          example: "2026-08-08"
+
+    CalendarDay:
+      type: object
+      required: [date, count, edevletCount, manualCount]
+      additionalProperties: false
+      properties:
+        date: { type: string, example: "2026-08-08" }
+        count: { type: integer, minimum: 0 }
+        edevletCount:
+          type: integer
+          minimum: 0
+          description: Çekimden gelen nöbet sayısı.
+        manualCount:
+          type: integer
+          minimum: 0
+          description: Panelden elle eklenen nöbet sayısı.
+
+    # ─── Çekim koşuları (ADR-006) ──────────────────────────────────────────
+
+    ScrapeTriggerInput:
+      type: object
+      additionalProperties: false
+      properties:
+        scope:
+          type: string
+          description: '`tum` → 81 il. Tek il için plaka kodunu metin olarak ver (`"7"`).'
+          pattern: "^(tum|[1-9][0-9]?)$"
+          default: "tum"
+        days:
+          type: string
+          enum: [bugun, yarin, ikisi]
+          default: ikisi
+
+    ScrapeTriggerResult:
+      type: object
+      required: [dispatchedAt, scope, days]
+      additionalProperties: false
+      properties:
+        dispatchedAt: { type: string, format: date-time }
+        scope: { type: string }
+        days: { type: string, enum: [bugun, yarin, ikisi] }
+
+    ScrapeRunInput:
+      type: object
+      required: [cityCode, dutyDate, startedAt, outcome]
+      additionalProperties: false
+      properties:
+        cityCode: { type: integer, minimum: 1, maximum: 81 }
+        dutyDate: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+        startedAt:
+          type: string
+          format: date-time
+          description: "Milisaniyesiz UTC: `YYYY-MM-DDTHH:MM:SSZ` (CLAUDE.md kota kuralı)."
+        outcome: { type: string, enum: [ok, partial, error] }
+        rowsFound: { type: integer, minimum: 0, default: 0 }
+        pharmaciesNew: { type: integer, minimum: 0, default: 0 }
+        dutiesWritten: { type: integer, minimum: 0, default: 0 }
+        coordsFetched:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Bu koşuda kaynağa atılan harita isteği sayısı.
+        rowsSkipped: { type: integer, minimum: 0, default: 0 }
+        errorMessage: { type: [string, "null"], maxLength: 500 }
+
+    ScrapeRun:
+      type: object
+      required:
+        [
+          id,
+          cityCode,
+          cityName,
+          dutyDate,
+          startedAt,
+          finishedAt,
+          outcome,
+          rowsFound,
+          pharmaciesNew,
+          dutiesWritten,
+          coordsFetched,
+          rowsSkipped,
+          errorMessage,
+        ]
+      additionalProperties: false
+      properties:
+        id: { type: integer }
+        cityCode: { type: integer }
+        cityName: { type: string, example: "Antalya" }
+        dutyDate: { type: string, example: "2026-08-08" }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: [string, "null"], format: date-time }
+        outcome: { type: string, enum: [ok, partial, error] }
+        rowsFound: { type: integer }
+        pharmaciesNew: { type: integer }
+        dutiesWritten: { type: integer }
+        coordsFetched: { type: integer }
+        rowsSkipped: { type: integer }
+        errorMessage: { type: [string, "null"] }
+
+    DutyShift:
+      type: object
+      required:
+        [
+          id,
+          pharmacyId,
+          pharmacyName,
+          districtCode,
+          districtName,
+          date,
+          dutyStart,
+          dutyEnd,
+          createdAt,
+        ]
+      additionalProperties: false
+      properties:
+        id: { type: integer }
+        pharmacyId: { type: integer }
+        pharmacyName: { type: string }
+        districtCode: { type: string }
+        districtName: { type: string }
+        date: { type: string, example: "2026-08-08" }
+        dutyStart: { type: string, format: date-time }
+        dutyEnd: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }

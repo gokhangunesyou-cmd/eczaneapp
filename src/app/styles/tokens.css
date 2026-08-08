@@ -1,0 +1,197 @@
+/*
+ * Tasarım token'ları — design/DESIGN-TOKENS.md'den birebir.
+ *
+ * BU DOSYADA TASARIM KARARI ÜRETİLMEZ. Bir değer eksikse önce
+ * design/nobetci-eczane.html'e bakılır. Ham hex başka hiçbir yerde kullanılmaz.
+ */
+
+/* ─── Fontlar (self-host; CDN yok, çevrimdışı çalışır) ──────────────────── */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url('/fonts/Archivo-800-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500 800;
+  font-display: swap;
+  src: url('/fonts/Archivo-800-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+011E-011F, U+015E-015F, U+0130-0131, U+1E00-1EFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Inter-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/Inter-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+011E-011F, U+015E-015F, U+0130-0131, U+1E00-1EFF;
+}
+
+/* ─── Koyu tema (birincil — gece kullanımı) ─────────────────────────────── */
+
+:root {
+  /* marka */
+  --brand: #14c08a;
+  --brand-hover: #3ee0ae;
+  --brand-muted: #0e8f68;
+  --brand-on: #04120d;
+  --brand-soft-bg: rgb(20 192 138 / 0.14);
+  --brand-soft-fg: #3ee0ae;
+  --brand-ghost-bg: rgb(20 192 138 / 0.12);
+
+  /* durum */
+  --warn: #ff9a3c;
+  --warn-fg: #ffb265;
+  --warn-on: #241304;
+  --warn-soft-bg: rgb(255 154 60 / 0.16);
+  --warn-surface: #231a11;
+  --warn-border: #4a3620;
+  --warn-icon: #c7a277;
+  --danger: #e05a5a;
+
+  /* kullanıcı konumu */
+  --user-dot: #3b82f6;
+  --user-halo: rgb(59 130 246 / 0.3);
+
+  /* yüzey */
+  --bg: #0b1015;
+  --bg-alt: #0f1419;
+  --surface: #171d24;
+  --surface-2: #1c232b;
+  --surface-3: #212932;
+  --surface-4: #1d242c;
+  --border: #232c36;
+  --border-2: #26313b;
+  --border-3: #2a343e;
+  --border-strong: #39434e;
+  --border-hover: #3b4550;
+
+  /* metin */
+  --text: #edf1f5;
+  --text-2: #b4c0cc;
+  --text-3: #8b98a5;
+  --text-4: #94a1ae;
+  --text-dim: #66727e;
+
+  /* radius */
+  --r-pin: 18px 18px 18px 6px;
+  --r-card: 22px;
+  --r-btn: 18px;
+  --r-btn-lg: 20px;
+  --r-sheet: 26px 26px 0 0;
+  --r-icon: 14px;
+  --r-icon-lg: 16px;
+  --r-field: 18px;
+  --r-badge: 10px;
+  --r-chip: 6px;
+  --r-handle: 3px;
+
+  /* gölge */
+  --sh-sheet: 0 -18px 44px rgb(0 0 0 / 0.5);
+  --sh-pin: 0 10px 26px rgb(20 192 138 / 0.4);
+  --sh-pin-sel: 0 14px 34px rgb(255 154 60 / 0.42);
+
+  /* hareket */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-sheet: 320ms;
+
+  /* boşluk — 4 tabanlı, 6'lı adımlar baskın */
+  --s-2: 2px;
+  --s-4: 4px;
+  --s-6: 6px;
+  --s-8: 8px;
+  --s-10: 10px;
+  --s-12: 12px;
+  --s-14: 14px;
+  --s-16: 16px;
+  --s-18: 18px;
+  --s-22: 22px;
+  --s-26: 26px;
+  --s-40: 40px;
+
+  /* tipografi */
+  --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  color-scheme: dark;
+}
+
+/* ─── Açık tema ─────────────────────────────────────────────────────────── */
+/* Yeşil AYRI bir değerdir, koyu temanın opaklık varyantı değil. */
+
+:root[data-theme='light'] {
+  --brand: #0e8f68;
+  --brand-hover: #0b7455;
+  --brand-muted: #14c08a;
+  --brand-on: #ffffff;
+  --brand-soft-bg: rgb(14 143 104 / 0.12);
+  --brand-soft-fg: #0b7455;
+  --brand-ghost-bg: rgb(14 143 104 / 0.1);
+
+  --user-dot: #2563eb;
+  --user-halo: rgb(37 99 235 / 0.22);
+
+  --bg: #f3f5f4;
+  --bg-alt: #f3f5f4;
+  --surface: #ffffff;
+  --surface-2: #f7f9f8;
+  --surface-3: #eef1f0;
+  --surface-4: #e9edeb;
+  --border: #dde2e0;
+  --border-2: #e2e7e5;
+  --border-3: #dde2e0;
+  --border-strong: #d2d9d6;
+  --border-hover: #c3ccc8;
+
+  --text: #0f1419;
+  --text-2: #4b5551;
+  --text-3: #6b7570;
+  --text-4: #6b7570;
+  --text-dim: #98a3a0;
+
+  --sh-sheet: 0 -18px 44px rgb(15 20 25 / 0.1);
+  --sh-pin: 0 10px 24px rgb(14 143 104 / 0.28);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --brand: #0e8f68;
+    --brand-hover: #0b7455;
+    --brand-on: #ffffff;
+    --brand-soft-bg: rgb(14 143 104 / 0.12);
+    --brand-soft-fg: #0b7455;
+    --user-dot: #2563eb;
+    --bg: #f3f5f4;
+    --bg-alt: #f3f5f4;
+    --surface: #ffffff;
+    --surface-2: #f7f9f8;
+    --surface-3: #eef1f0;
+    --surface-4: #e9edeb;
+    --border: #dde2e0;
+    --border-2: #e2e7e5;
+    --border-3: #dde2e0;
+    --border-strong: #d2d9d6;
+    --text: #0f1419;
+    --text-2: #4b5551;
+    --text-3: #6b7570;
+    --text-4: #6b7570;
+    --text-dim: #98a3a0;
+    --sh-sheet: 0 -18px 44px rgb(15 20 25 / 0.1);
+    color-scheme: light;
+  }
+}

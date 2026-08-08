@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0A0E12;color:#EDF1F5;font-family:'Inter',-apple-system,sans-serif;}
+  a{color:#14C08A;text-decoration:none}
+  a:hover{color:#3EE0AE}
+  @keyframes pulse{0%{transform:scale(1);opacity:.55}70%{transform:scale(3.2);opacity:0}100%{opacity:0}}
+  @keyframes shimmer{0%{opacity:.35}50%{opacity:.85}100%{opacity:.35}}
+</style>
+</helmet>
+
+<section style="padding:56px 48px 96px;display:flex;flex-direction:column;gap:40px">
+
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+    <h1 style="font-family:'Archivo',sans-serif;font-size:34px;font-weight:800;letter-spacing:-.03em;margin:0">Nöbetçi Eczane — mobil web</h1>
+    <span style="font-size:14px;color:#94A1AE">390×844 · gece kullanımı · reklamsız · <a href="#1a">1a</a></span>
+  </div>
+
+  <div id="1a" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+
+    <!-- ================= 1 · İZİN ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·1</span><span style="font-size:13px;color:#94A1AE">Açılış + konum izni</span></div>
+      <div data-screen-label="01 İzin" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0F1419;border:1px solid #232C36;display:flex;flex-direction:column;justify-content:space-between;padding:0">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 34%,rgba(20,192,138,.18),transparent 58%)"></div>
+        <div style="position:relative;display:flex;justify-content:space-between;padding:16px 26px 0;font-size:13px;font-weight:600;color:#EDF1F5;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">●●● ▮</span></div>
+        <div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:0 40px;text-align:center">
+          <div style="width:96px;height:96px;border-radius:30px;background:#14C08A;display:grid;place-items:center;position:relative">
+            <div style="position:absolute;inset:0;border-radius:30px;background:#14C08A;animation:pulse 2.6s ease-out infinite"></div>
+            <div style="position:relative;width:46px;height:14px;background:#04120D;border-radius:3px"></div>
+            <div style="position:absolute;width:14px;height:46px;background:#04120D;border-radius:3px"></div>
+          </div>
+          <div style="font-family:'Archivo',sans-serif;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.15;text-wrap:balance">Gece açık eczaneyi<br>hemen göstereyim</div>
+          <div style="font-size:15px;line-height:1.55;color:#94A1AE;max-width:280px">Nerede olduğunu bilirsem en yakınını bulurum. Kayıt yok, reklam yok.</div>
+        </div>
+        <div style="position:relative;padding:0 22px 40px;display:flex;flex-direction:column;gap:14px">
+          <button style="height:60px;border:0;border-radius:20px;background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.01em;cursor:pointer" style-hover="background:#3EE0AE">Konumumu kullan</button>
+          <button style="height:52px;border:1px solid #2A323C;border-radius:18px;background:transparent;color:#94A1AE;font-size:15px;font-weight:500;cursor:pointer" style-hover="color:#EDF1F5;border-color:#3B4550">İlçemi kendim seçeyim</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 2 · YÜKLENİYOR ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·2</span><span style="font-size:13px;color:#94A1AE">Yükleniyor</span></div>
+      <div data-screen-label="02 Yükleniyor" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0B1015;border:1px solid #232C36">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 46% 38%,#131C24,#0B1015 70%),repeating-linear-gradient(24deg,transparent 0 46px,#151E26 46px 49px),repeating-linear-gradient(114deg,transparent 0 62px,#151E26 62px 65px);animation:shimmer 1.8s ease-in-out infinite"></div>
+        <div style="position:absolute;top:52px;left:22px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em">nöbetçi</div>
+          <div style="font-size:13px;color:#66727E;font-variant-numeric:tabular-nums">6 Ağustos, 03:14</div>
+        </div>
+        <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#3B82F6;box-shadow:0 0 0 4px rgba(59,130,246,.25)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:236px;background:#171D24;border-top:1px solid #232C36;border-radius:26px 26px 0 0;padding:14px 22px 0;display:flex;flex-direction:column;gap:18px">
+          <div style="width:44px;height:5px;border-radius:3px;background:#2A323C;align-self:center"></div>
+          <div style="display:flex;align-items:center;gap:12px;color:#94A1AE;font-size:15px"><div style="width:16px;height:16px;border-radius:50%;border:2px solid #14C08A;border-top-color:transparent"></div>Yakınındaki eczaneler bulunuyor…</div>
+          <div style="display:flex;flex-direction:column;gap:12px;animation:shimmer 1.5s ease-in-out infinite">
+            <div style="height:22px;width:62%;border-radius:8px;background:#212932"></div>
+            <div style="height:14px;width:40%;border-radius:6px;background:#1D242C"></div>
+            <div style="height:14px;width:78%;border-radius:6px;background:#1D242C"></div>
+            <div style="display:flex;gap:12px;margin-top:6px"><div style="flex:1;height:56px;border-radius:18px;background:#212932"></div><div style="flex:1;height:56px;border-radius:18px;background:#1D242C"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 3 · ANA EKRAN (etkileşimli) ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·3</span><span style="font-size:13px;color:#94A1AE">Ana ekran — peek (tutamağa tıkla: peek → half → full)</span></div>
+      <div data-screen-label="03 Ana ekran" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0B1015;border:1px solid #232C36">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 46% 34%,#131C24,#0B1015 72%),repeating-linear-gradient(24deg,transparent 0 46px,#161F27 46px 49px),repeating-linear-gradient(114deg,transparent 0 62px,#161F27 62px 65px)"></div>
+        <div style="position:absolute;left:-40px;top:180px;width:200px;height:120px;border-radius:60px;background:#101C18;opacity:.9"></div>
+        <div style="position:absolute;left:0;right:0;top:300px;height:10px;background:#1C262F"></div>
+        <div style="position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">●●● ▮</span></div>
+        <div style="position:absolute;top:56px;left:22px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em">nöbetçi</div>
+          <div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">6 Ağustos, 03:14</div>
+        </div>
+        <button style="position:absolute;top:54px;right:22px;width:48px;height:48px;border-radius:16px;background:rgba(23,29,36,.92);border:1px solid #2A323C;color:#EDF1F5;display:grid;place-items:center;cursor:pointer" style-hover="border-color:#14C08A;color:#14C08A">
+          <div style="width:16px;height:16px;border-radius:50%;border:2px solid currentColor"></div>
+        </button>
+        <div style="position:absolute;left:172px;top:392px;width:20px;height:20px;border-radius:50%;background:#3B82F6;border:3px solid #0B1015;box-shadow:0 0 0 3px rgba(59,130,246,.3)">
+          <div style="position:absolute;inset:-3px;border-radius:50%;background:#3B82F6;animation:pulse 2.8s ease-out infinite"></div>
+        </div>
+        <div style="position:absolute;left:118px;top:258px;display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="background:#14C08A;color:#04120D;width:52px;height:52px;border-radius:18px 18px 18px 6px;display:grid;place-items:center;box-shadow:0 10px 26px rgba(20,192,138,.4)">
+            <div style="position:relative;width:24px;height:8px;background:#04120D;border-radius:2px"></div><div style="position:absolute;width:8px;height:24px;background:#04120D;border-radius:2px"></div>
+          </div>
+          <div style="background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums">1.2 km</div>
+        </div>
+        <div style="position:absolute;left:268px;top:216px;display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.85">
+          <div style="background:#0E8F68;width:38px;height:38px;border-radius:13px 13px 13px 5px;display:grid;place-items:center">
+            <div style="position:relative;width:17px;height:6px;background:#04120D;border-radius:2px"></div><div style="position:absolute;width:6px;height:17px;background:#04120D;border-radius:2px"></div>
+          </div>
+          <div style="background:rgba(11,16,21,.85);border:1px solid #24303A;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;font-variant-numeric:tabular-nums">2.4 km</div>
+        </div>
+        <div style="position:absolute;left:60px;top:452px;display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.85">
+          <div style="background:#0E8F68;width:38px;height:38px;border-radius:13px 13px 13px 5px;display:grid;place-items:center">
+            <div style="position:relative;width:17px;height:6px;background:#04120D;border-radius:2px"></div><div style="position:absolute;width:6px;height:17px;background:#04120D;border-radius:2px"></div>
+          </div>
+          <div style="background:rgba(11,16,21,.85);border:1px solid #24303A;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;font-variant-numeric:tabular-nums">3.1 km</div>
+        </div>
+
+        <div style="position:absolute;left:0;right:0;bottom:0;background:#171D24;border-top:1px solid #262F39;border-radius:26px 26px 0 0;box-shadow:0 -18px 44px rgba(0,0,0,.5);overflow:hidden;height:{{ sheetH }};transition:height .32s cubic-bezier(.32,.72,0,1)">
+          <div onClick="{{ cycle }}" style="height:26px;display:grid;place-items:center;cursor:pointer">
+            <div style="width:44px;height:5px;border-radius:3px;background:#39434E"></div>
+          </div>
+          <div style="padding:0 18px 22px;display:flex;flex-direction:column;gap:14px">
+            <div style="border:1px solid #26313B;background:#1C232B;border-radius:22px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                  <div style="font-family:'Archivo',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.025em;line-height:1.15">Deniz Eczanesi</div>
+                  <div style="font-size:14px;color:#B4C0CC;font-variant-numeric:tabular-nums">1.2 km · 4 dk araçla</div>
+                  <div style="font-size:13px;color:#8B98A5;line-height:1.45">Tahılpazarı Mah. Ali Çetinkaya Cad. No:41/A, Muratpaşa</div>
+                </div>
+                <button style="width:44px;height:44px;flex:none;border-radius:14px;border:1px solid #2A343E;background:transparent;color:#8B98A5;display:grid;place-items:center;cursor:pointer" style-hover="color:#14C08A;border-color:#14C08A">
+                  <div style="width:14px;height:14px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(-45deg);margin-bottom:3px"></div>
+                </button>
+              </div>
+              <div style="align-self:flex-start;display:flex;align-items:center;gap:8px;background:rgba(20,192,138,.14);color:#3EE0AE;border-radius:10px;padding:7px 12px;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">
+                <span style="width:7px;height:7px;border-radius:50%;background:#14C08A"></span>Sabah 08:30'a kadar açık
+              </div>
+              <div style="display:flex;gap:12px">
+                <button style="flex:1.25;height:58px;border:0;border-radius:18px;background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer" style-hover="background:#3EE0AE">Yol Tarifi</button>
+                <button style="flex:1;height:58px;border:1px solid #14C08A;border-radius:18px;background:transparent;color:#14C08A;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer" style-hover="background:rgba(20,192,138,.12)">Ara</button>
+              </div>
+            </div>
+
+            <sc-if value="{{ listOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#66727E;padding:6px 4px">Yakındaki diğer eczaneler</div>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Kepez Sağlık Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">2.4 km · 7 dk · Kepez</div></div>
+                  <div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Lara Şifa Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">3.1 km · 9 dk · Muratpaşa</div></div>
+                  <div style="font-size:12px;font-weight:700;color:#FF9A3C;font-variant-numeric:tabular-nums">43 dk</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Konyaaltı Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">4.6 km · 11 dk · Konyaaltı</div></div>
+                  <div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Varsak Meydan Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">6.8 km · 14 dk · Kepez</div></div>
+                  <div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div>
+                </div>
+                <sc-if value="{{ fullOpen }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px">
+                      <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Aksu Yeni Eczane</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">12.3 km · 19 dk · Aksu</div></div>
+                      <div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-top:1px solid #232C36;min-height:64px;opacity:.45">
+                      <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Barınaklar Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">5.2 km · Nöbeti bitti</div></div>
+                      <div style="font-size:12px;font-weight:700;color:#E05A5A">Kapalı</div>
+                    </div>
+                    <button style="margin-top:14px;height:56px;border:1px solid #2A343E;border-radius:18px;background:transparent;color:#B4C0CC;font-size:15px;font-weight:500;cursor:pointer" style-hover="border-color:#3B4550;color:#EDF1F5">İlçe değiştir · Muratpaşa</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 4 · HALF (statik) ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·4</span><span style="font-size:13px;color:#94A1AE">Half — liste açık</span></div>
+      <div data-screen-label="04 Half" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0B1015;border:1px solid #232C36">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 46% 26%,#131C24,#0B1015 72%),repeating-linear-gradient(24deg,transparent 0 46px,#161F27 46px 49px),repeating-linear-gradient(114deg,transparent 0 62px,#161F27 62px 65px)"></div>
+        <div style="position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">●●● ▮</span></div>
+        <div style="position:absolute;top:56px;left:22px;display:flex;flex-direction:column;gap:4px"><div style="font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em">nöbetçi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">6 Ağustos, 03:14</div></div>
+        <div style="position:absolute;left:126px;top:170px;background:#14C08A;color:#04120D;width:48px;height:48px;border-radius:16px 16px 16px 6px;display:grid;place-items:center;box-shadow:0 10px 26px rgba(20,192,138,.35)"><div style="position:relative;width:22px;height:7px;background:#04120D;border-radius:2px"></div><div style="position:absolute;width:7px;height:22px;background:#04120D;border-radius:2px"></div></div>
+        <div style="position:absolute;left:214px;top:252px;width:20px;height:20px;border-radius:50%;background:#3B82F6;border:3px solid #0B1015"></div>
+
+        <div style="position:absolute;left:0;right:0;bottom:0;height:600px;background:#171D24;border-top:1px solid #262F39;border-radius:26px 26px 0 0;box-shadow:0 -18px 44px rgba(0,0,0,.55);padding:0 18px">
+          <div style="height:26px;display:grid;place-items:center"><div style="width:44px;height:5px;border-radius:3px;background:#39434E"></div></div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="border:1px solid #26313B;background:#1C232B;border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-family:'Archivo',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.025em">Deniz Eczanesi</div>
+              <div style="font-size:13px;color:#B4C0CC;font-variant-numeric:tabular-nums">1.2 km · 4 dk araçla · Muratpaşa</div>
+              <div style="align-self:flex-start;display:flex;align-items:center;gap:8px;background:rgba(20,192,138,.14);color:#3EE0AE;border-radius:10px;padding:6px 11px;font-family:'Archivo',sans-serif;font-size:12px;font-weight:700"><span style="width:6px;height:6px;border-radius:50%;background:#14C08A"></span>Sabah 08:30'a kadar açık</div>
+              <div style="display:flex;gap:10px"><button style="flex:1.25;height:56px;border:0;border-radius:18px;background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Yol Tarifi</button><button style="flex:1;height:56px;border:1px solid #14C08A;border-radius:18px;background:transparent;color:#14C08A;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Ara</button></div>
+            </div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#66727E;padding-left:4px">Yakındaki diğer eczaneler</div>
+            <div style="display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-top:1px solid #232C36"><div style="flex:1"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Kepez Sağlık Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">2.4 km · 7 dk · Kepez</div></div><div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-top:1px solid #232C36"><div style="flex:1"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Lara Şifa Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">3.1 km · 9 dk · Muratpaşa</div></div><div style="font-size:12px;font-weight:700;color:#FF9A3C;font-variant-numeric:tabular-nums">43 dk</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-top:1px solid #232C36"><div style="flex:1"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Konyaaltı Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">4.6 km · 11 dk · Konyaaltı</div></div><div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-top:1px solid #232C36"><div style="flex:1"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Varsak Meydan Eczanesi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">6.8 km · 14 dk · Kepez</div></div><div style="font-size:12px;font-weight:700;color:#3EE0AE;font-variant-numeric:tabular-nums">08:30</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:15px 4px;border-top:1px solid #232C36;opacity:.45"><div style="flex:1"><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Barınaklar Eczanesi</div><div style="font-size:13px;color:#8B98A5">5.2 km · Nöbeti bitti</div></div><div style="font-size:12px;font-weight:700;color:#E05A5A">Kapalı</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 5 · PIN SEÇİLİ ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·5</span><span style="font-size:13px;color:#94A1AE">Pin seçili — geri sayımlı eczane</span></div>
+      <div data-screen-label="05 Seçili" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0B1015;border:1px solid #232C36">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 60% 30%,#131C24,#0B1015 72%),repeating-linear-gradient(24deg,transparent 0 46px,#161F27 46px 49px),repeating-linear-gradient(114deg,transparent 0 62px,#161F27 62px 65px)"></div>
+        <div style="position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">●●● ▮</span></div>
+        <div style="position:absolute;top:56px;left:22px;display:flex;flex-direction:column;gap:4px"><div style="font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em">nöbetçi</div><div style="font-size:13px;color:#8B98A5;font-variant-numeric:tabular-nums">6 Ağustos, 03:14</div></div>
+        <div style="position:absolute;left:104px;top:236px;opacity:.5"><div style="background:#0E8F68;width:36px;height:36px;border-radius:12px 12px 12px 5px;display:grid;place-items:center"><div style="position:relative;width:16px;height:6px;background:#04120D;border-radius:2px"></div><div style="position:absolute;width:6px;height:16px;background:#04120D;border-radius:2px"></div></div></div>
+        <div style="position:absolute;left:222px;top:288px;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="background:#FF9A3C;width:60px;height:60px;border-radius:20px 20px 20px 7px;display:grid;place-items:center;box-shadow:0 14px 34px rgba(255,154,60,.42)"><div style="position:relative;width:26px;height:9px;background:#241304;border-radius:2px"></div><div style="position:absolute;width:9px;height:26px;background:#241304;border-radius:2px"></div></div>
+          <div style="background:#FF9A3C;color:#241304;font-family:'Archivo',sans-serif;font-size:12px;font-weight:800;padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums">3.1 km</div>
+        </div>
+        <div style="position:absolute;left:150px;top:452px;width:20px;height:20px;border-radius:50%;background:#3B82F6;border:3px solid #0B1015"></div>
+
+        <div style="position:absolute;left:0;right:0;bottom:0;height:302px;background:#171D24;border-top:1px solid #262F39;border-radius:26px 26px 0 0;box-shadow:0 -18px 44px rgba(0,0,0,.55);padding:0 18px">
+          <div style="height:26px;display:grid;place-items:center"><div style="width:44px;height:5px;border-radius:3px;background:#39434E"></div></div>
+          <div style="border:1px solid #4A3620;background:#231A11;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-family:'Archivo',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.025em">Lara Şifa Eczanesi</div>
+                <div style="font-size:14px;color:#B4C0CC;font-variant-numeric:tabular-nums">3.1 km · 9 dk araçla</div>
+                <div style="font-size:13px;color:#8B98A5;line-height:1.45">Fener Mah. Tekelioğlu Cad. No:112/B, Muratpaşa</div>
+              </div>
+              <button style="width:44px;height:44px;flex:none;border-radius:14px;border:1px solid #4A3620;background:transparent;color:#C7A277;display:grid;place-items:center;cursor:pointer"><div style="width:14px;height:14px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(-45deg);margin-bottom:3px"></div></button>
+            </div>
+            <div style="align-self:flex-start;display:flex;align-items:center;gap:8px;background:rgba(255,154,60,.16);color:#FFB265;border-radius:10px;padding:7px 12px;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums"><span style="width:7px;height:7px;border-radius:50%;background:#FF9A3C"></span>43 dakika sonra kapanıyor</div>
+            <div style="display:flex;gap:12px">
+              <button style="flex:1.25;height:58px;border:0;border-radius:18px;background:#FF9A3C;color:#241304;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Yol Tarifi</button>
+              <button style="flex:1;height:58px;border:1px solid #FF9A3C;border-radius:18px;background:transparent;color:#FFB265;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Ara</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 6 · İZİN REDDEDİLDİ ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·6</span><span style="font-size:13px;color:#94A1AE">Konum yok — ilçe seçimi</span></div>
+      <div data-screen-label="06 İlçe seçimi" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0F1419;border:1px solid #232C36;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;padding:16px 26px 0;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">●●● ▮</span></div>
+        <div style="padding:38px 22px 18px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-family:'Archivo',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.2;text-wrap:pretty">Nerede olduğunu bulamadım, ilçeni seçer misin?</div>
+          <div style="font-size:14px;color:#8B98A5">Antalya · listeyi hemen getiririm</div>
+        </div>
+        <div style="flex:1;overflow:hidden;padding:0 22px;display:flex;flex-direction:column">
+          <div style="height:56px;border:1px solid #2A343E;border-radius:18px;display:flex;align-items:center;padding:0 16px;gap:10px;color:#66727E;font-size:15px;margin-bottom:14px"><div style="width:15px;height:15px;border-radius:50%;border:2px solid currentColor"></div>İlçe ara</div>
+          <div style="display:flex;flex-direction:column">
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Muratpaşa <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">6 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Kepez <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">5 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Konyaaltı <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">3 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Aksu <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">2 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Döşemealtı <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">2 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Serik <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">2 nöbetçi</span></div>
+            <div style="min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #232C36;font-family:'Archivo',sans-serif;font-size:17px;font-weight:700">Manavgat <span style="font-family:'Inter';font-size:13px;font-weight:400;color:#66727E">4 nöbetçi</span></div>
+          </div>
+        </div>
+        <div style="padding:16px 22px 40px;background:linear-gradient(to top,#0F1419 62%,transparent)">
+          <button style="width:100%;height:60px;border:1px solid #2A343E;border-radius:20px;background:transparent;color:#3EE0AE;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer" style-hover="border-color:#14C08A">Konum iznini tekrar dene</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 7 · OFFLINE ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·7</span><span style="font-size:13px;color:#94A1AE">Bağlantı yok — son bilinen liste</span></div>
+      <div data-screen-label="07 Çevrimdışı" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#0F1419;border:1px solid #232C36;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;padding:16px 26px 0;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>03:14</span><span style="color:#66727E">✕ ▮</span></div>
+        <div style="margin:18px 18px 0;background:rgba(255,154,60,.12);border:1px solid #4A3620;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:'Archivo',sans-serif;font-size:15px;font-weight:800;color:#FFB265">Bağlantı yok</div>
+          <div style="font-size:13px;color:#B4C0CC;line-height:1.45">03:02'de kaydettiğim listeyi gösteriyorum. Yola çıkmadan telefonla teyit et.</div>
+        </div>
+        <div style="padding:20px 18px 0;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="border:1px solid #26313B;background:#1C232B;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div style="font-family:'Archivo',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.025em">Deniz Eczanesi</div>
+            <div style="font-size:13px;color:#8B98A5;line-height:1.45">Tahılpazarı Mah. Ali Çetinkaya Cad. No:41/A, Muratpaşa</div>
+            <div style="align-self:flex-start;display:flex;align-items:center;gap:8px;background:#212932;color:#94A1AE;border-radius:10px;padding:7px 12px;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700">Kayıtlı bilgi · 03:02</div>
+            <div style="display:flex;gap:12px"><button style="flex:1.25;height:58px;border:0;border-radius:18px;background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Ara</button><button style="flex:1;height:58px;border:1px solid #2A343E;border-radius:18px;background:transparent;color:#8B98A5;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Adresi kopyala</button></div>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <div style="min-height:64px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #232C36"><div><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Kepez Sağlık Eczanesi</div><div style="font-size:13px;color:#8B98A5">Kepez · Yeşilırmak Cad. No:8</div></div></div>
+            <div style="min-height:64px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #232C36"><div><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Lara Şifa Eczanesi</div><div style="font-size:13px;color:#8B98A5">Muratpaşa · Tekelioğlu Cad. No:112/B</div></div></div>
+            <div style="min-height:64px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #232C36"><div><div style="font-family:'Archivo',sans-serif;font-size:16px;font-weight:700">Konyaaltı Eczanesi</div><div style="font-size:13px;color:#8B98A5">Konyaaltı · Atatürk Bulvarı No:57</div></div></div>
+          </div>
+        </div>
+        <div style="padding:16px 18px 40px"><button style="width:100%;height:60px;border:0;border-radius:20px;background:#14C08A;color:#04120D;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Tekrar dene</button></div>
+      </div>
+    </div>
+
+    <!-- ================= 8 · AÇIK TEMA ================= -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'Archivo',sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;background:#14C08A;color:#04120D;padding:3px 8px;border-radius:4px">1a·8</span><span style="font-size:13px;color:#94A1AE">Açık tema — ana ekran</span></div>
+      <div data-screen-label="08 Açık tema" style="width:390px;height:844px;border-radius:38px;overflow:hidden;position:relative;background:#F3F5F4;border:1px solid #DDE2E0;color:#0F1419">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 46% 34%,#FFFFFF,#E9EDEB 72%),repeating-linear-gradient(24deg,transparent 0 46px,#DFE5E2 46px 49px),repeating-linear-gradient(114deg,transparent 0 62px,#DFE5E2 62px 65px)"></div>
+        <div style="position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums"><span>08:42</span><span style="color:#98A3A0">●●● ▮</span></div>
+        <div style="position:absolute;top:56px;left:22px;display:flex;flex-direction:column;gap:4px"><div style="font-family:'Archivo',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em">nöbetçi</div><div style="font-size:13px;color:#6B7570;font-variant-numeric:tabular-nums">6 Ağustos, 08:42</div></div>
+        <button style="position:absolute;top:54px;right:22px;width:48px;height:48px;border-radius:16px;background:#FFFFFF;border:1px solid #DDE2E0;display:grid;place-items:center;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;border:2px solid #0E8F68"></div></button>
+        <div style="position:absolute;left:118px;top:258px;display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="background:#0E8F68;width:52px;height:52px;border-radius:18px 18px 18px 6px;display:grid;place-items:center;box-shadow:0 10px 24px rgba(14,143,104,.28)"><div style="position:relative;width:24px;height:8px;background:#FFFFFF;border-radius:2px"></div><div style="position:absolute;width:8px;height:24px;background:#FFFFFF;border-radius:2px"></div></div>
+          <div style="background:#0E8F68;color:#FFFFFF;font-family:'Archivo',sans-serif;font-size:12px;font-weight:800;padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums">1.2 km</div>
+        </div>
+        <div style="position:absolute;left:172px;top:392px;width:20px;height:20px;border-radius:50%;background:#2563EB;border:3px solid #FFFFFF;box-shadow:0 0 0 3px rgba(37,99,235,.22)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:300px;background:#FFFFFF;border-top:1px solid #E2E7E5;border-radius:26px 26px 0 0;box-shadow:0 -18px 44px rgba(15,20,25,.1);padding:0 18px">
+          <div style="height:26px;display:grid;place-items:center"><div style="width:44px;height:5px;border-radius:3px;background:#D2D9D6"></div></div>
+          <div style="border:1px solid #E2E7E5;background:#F7F9F8;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="font-family:'Archivo',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.025em">Deniz Eczanesi</div>
+                <div style="font-size:14px;color:#4B5551;font-variant-numeric:tabular-nums">1.2 km · 4 dk araçla</div>
+                <div style="font-size:13px;color:#6B7570;line-height:1.45">Tahılpazarı Mah. Ali Çetinkaya Cad. No:41/A</div>
+              </div>
+              <button style="width:44px;height:44px;flex:none;border-radius:14px;border:1px solid #DDE2E0;background:#FFFFFF;color:#6B7570;display:grid;place-items:center;cursor:pointer"><div style="width:14px;height:14px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(-45deg);margin-bottom:3px"></div></button>
+            </div>
+            <div style="align-self:flex-start;display:flex;align-items:center;gap:8px;background:rgba(14,143,104,.12);color:#0B7455;border-radius:10px;padding:7px 12px;font-family:'Archivo',sans-serif;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums"><span style="width:7px;height:7px;border-radius:50%;background:#0E8F68"></span>Sabah 08:30'a kadar açık</div>
+            <div style="display:flex;gap:12px"><button style="flex:1.25;height:58px;border:0;border-radius:18px;background:#0E8F68;color:#FFFFFF;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Yol Tarifi</button><button style="flex:1;height:58px;border:1px solid #0E8F68;border-radius:18px;background:transparent;color:#0E8F68;font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;cursor:pointer">Ara</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { sheet: 'peek' };
+  renderVals(){
+    const s = this.state.sheet;
+    return {
+      sheetH: s === 'peek' ? '300px' : s === 'half' ? '460px' : '724px',
+      listOpen: s !== 'peek',
+      fullOpen: s === 'full',
+      cycle: () => this.setState(st => ({ sheet: st.sheet === 'peek' ? 'half' : st.sheet === 'half' ? 'full' : 'peek' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

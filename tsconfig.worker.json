@@ -1,0 +1,38 @@
+{
+  // Cloudflare Worker. Workers tipleri burada; DOM tipleri BURAYA GİRMEZ.
+  //
+  // Neden ayrı tsconfig: DOM ve @cloudflare/workers-types aynı global adları
+  // (Request, Response, caches, fetch) farklı imzalarla tanımlar. Tek dosyada
+  // birleştirilirse ikisi de yanlış tiplenir ve derleyici gerçek hataları kaçırır.
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@worker/*": ["./src/worker/*"],
+      "@shared/*": ["./src/shared/*"]
+    }
+  },
+  "include": ["src/worker", "src/shared", "worker-configuration.d.ts", "tests/setup-worker.ts"]
+}
