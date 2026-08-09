@@ -98,12 +98,12 @@ describe('toImportItems', () => {
     expect(skipped).toHaveLength(0);
   });
 
-  it('slug il/ilçe/eczane üçlüsünden türer', () => {
-    expect(items.map((i) => i.slug)).toContain('van/baskale/baskale-eczanesi');
+  it('slug il/ilçe/eczane üçlüsünden türer, "Eczanesi" eki anahtara girmez', () => {
+    expect(items.map((i) => i.slug)).toContain('van/baskale/baskale');
   });
 
   it('tarif notunu adrese ekler', () => {
-    const arjin = items.find((i) => i.slug === 'van/ercis/arjin-eczanesi');
+    const arjin = items.find((i) => i.slug === 'van/ercis/arjin');
     expect(arjin.address).toBe('Beyazıt Mahallesi, Zeylan Caddesi No:1 (Okyanus Giyim yanı)');
   });
 

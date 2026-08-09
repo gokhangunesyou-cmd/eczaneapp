@@ -54,7 +54,26 @@ export function slugify(input: string): string {
  * Eczanenin doğal anahtarı: `il/ilçe/eczane`.
  *
  * Örnek: `antalya/akseki/murtici`
+ *
+ * Ad, anahtara girmeden önce `Eczanesi` son ekinden arındırılır — böylece anahtar
+ * KAYNAKTAN BAĞIMSIZ olur. Kaynaklar aynı eczaneyi farklı yazıyor: e-Devlet
+ * `DİNÇERLER`, eczaneler.gen.tr `Dinçerler Eczanesi`. Ölçüldü (9 Ağustos 2026,
+ * Antalya): 36 kaydın 36'sı yalnızca bu son ekle ayrışıyor, tam eşleşen sıfır.
+ * Ek atılmazsa kaynak değiştiğinde her eczane İKİNCİ kez açılır ve koordinatı
+ * yeni kayda taşınmaz.
+ *
+ * Son ek HAM AD ÜZERİNDEN DEĞİL, slug üzerinden atılır. Gerekçe Türkçe I
+ * sorunudur: `ECZANESİ` sondaki `İ` yüzünden `/eczanesi/i` kalıbına TAKILMAZ —
+ * JS'in harf eşlemesi `İ` ile `i`'yi denk saymaz. `slugify` bu eşlemeyi zaten
+ * doğru yaptığı için ek, normalleşmiş metinden kesilir.
+ *
+ * Yalnızca SONDAKİ ek gider: `Eczane Nish` gibi baştan gelen adlar korunur
+ * (228 gerçek addan biri böyleydi), tek başına `Eczane` de öyle.
+ *
+ * Görüntülenen ad buna dokunmadan kaynaktaki hâliyle saklanır; burada üretilen
+ * yalnızca kimliktir.
  */
 export function pharmacySlug(citySlug: string, districtSlug: string, name: string): string {
-  return `${citySlug}/${districtSlug}/${slugify(name)}`;
+  const key = slugify(name).replace(/-eczane(si)?$/, '');
+  return `${citySlug}/${districtSlug}/${key}`;
 }

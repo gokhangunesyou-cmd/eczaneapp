@@ -39,14 +39,32 @@ describe('slugify', () => {
 describe('pharmacySlug', () => {
   it('il/ilçe/eczane üçlüsünü birleştirir', () => {
     expect(pharmacySlug('antalya', 'akseki', 'MURTİÇİ')).toBe('antalya/akseki/murtici');
-    expect(pharmacySlug('antalya', 'muratpasa', 'Deniz Eczanesi')).toBe(
-      'antalya/muratpasa/deniz-eczanesi',
-    );
   });
 
   it('aynı ad farklı ilçede farklı slug üretir', () => {
     expect(pharmacySlug('antalya', 'kepez', 'Merkez')).not.toBe(
       pharmacySlug('antalya', 'serik', 'Merkez'),
     );
+  });
+
+  // Anahtar KAYNAKTAN BAĞIMSIZ olmalı: e-Devlet "DİNÇERLER" yazıyor,
+  // eczaneler.gen.tr "Dinçerler Eczanesi". İkisi aynı eczane, aynı slug.
+  it('iki kaynağın yazımını aynı anahtara indirger', () => {
+    expect(pharmacySlug('antalya', 'muratpasa', 'DİNÇERLER')).toBe(
+      pharmacySlug('antalya', 'muratpasa', 'Dinçerler Eczanesi'),
+    );
+    expect(pharmacySlug('antalya', 'muratpasa', 'Deniz Eczanesi')).toBe('antalya/muratpasa/deniz');
+    expect(pharmacySlug('antalya', 'muratpasa', 'AHMET DOĞAN ECZANESİ')).toBe(
+      'antalya/muratpasa/ahmet-dogan',
+    );
+  });
+
+  it('baştaki "Eczane" korunur — son ek değil', () => {
+    // Gerçek ad: kaynakta "Eczane Nish" diye geçiyor.
+    expect(pharmacySlug('istanbul', 'sisli', 'Eczane Nish')).toBe('istanbul/sisli/eczane-nish');
+  });
+
+  it('adın tamamı son ekten ibaretse ham hâli kullanılır', () => {
+    expect(pharmacySlug('antalya', 'kepez', 'Eczane')).toBe('antalya/kepez/eczane');
   });
 });

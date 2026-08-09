@@ -97,6 +97,40 @@ kurulmasını gerektiriyordu. Kazanç yalnızca isimlendirme, bedel prod veritab
 **Bilinen borç:** değerin adı artık gerçeği anlatmıyor. Şema göçü gerektiren
 başka bir iş çıktığında `'otomatik'` olarak yeniden adlandırılmalı.
 
+## Doğal anahtar kaynaktan bağımsızlaştırıldı
+
+Kaynak değiştirmenin sessiz bedeli burada çıktı. İki kaynak aynı eczaneyi farklı
+yazıyor:
+
+| e-Devlet      | eczaneler.gen.tr       |
+| ------------- | ---------------------- |
+| `DİNÇERLER`   | `Dinçerler Eczanesi`   |
+| `AHMET DOĞAN` | `Ahmet Doğan Eczanesi` |
+
+Ölçüldü (9 Ağustos 2026, Antalya): prod'daki 36 kaydın **36'sı** yalnızca bu son
+ekle ayrışıyor, tam eşleşen **sıfır**. Slug doğal anahtar olduğu için düzeltilmese
+ilk koşuda Antalya'nın 36 kaydı öksüz kalacak, 40 yenisi açılacaktı — elle
+girilmiş koordinatlar eski kayıtlarda kalacağı için de kaybolacaktı.
+
+`pharmacySlug` artık adın sonundaki `Eczanesi`/`Eczane` ekini anahtara almıyor.
+Üç nokta önemli:
+
+- **Görüntülenen ad değişmiyor.** Kaynaktaki hâliyle saklanıyor; kesilen yalnızca
+  kimlik.
+- **Ek, ham ad üzerinden değil slug üzerinden atılıyor.** `ECZANESİ` sondaki `İ`
+  yüzünden `/eczanesi/i` kalıbına takılmıyor — JS `İ` ile `i`'yi denk saymıyor.
+  `slugify` bu eşlemeyi zaten doğru yaptığı için ek normalleşmiş metinden
+  kesiliyor. Bu tuzağa bir kez düşüldü, test yakaladı.
+- **Yalnızca sondaki ek gidiyor.** `Eczane Nish` gibi baştan gelen adlar ve tek
+  başına `Eczane` korunuyor.
+
+Mevcut prod slug'ları DEĞİŞMİYOR: e-Devlet'ten gelen adlarda zaten son ek yok, o
+yüzden kural onlar için etkisiz. Doğrulandı: 36/36 anahtar eşleşiyor, yani ilk
+koşu bu kayıtları mükerrer açmak yerine güncelliyor.
+
+Ekin farklı eczaneleri birbirine çökertme riski 81 ilin tamamında ölçüldü:
+1386 eczane, **sıfır çakışma**.
+
 ## Sonuçlar
 
 - e-Devlet komutu silinmedi, `npm run scrape:edevlet` olarak duruyor. Resmî
