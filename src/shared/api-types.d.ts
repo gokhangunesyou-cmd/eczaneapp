@@ -207,6 +207,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/probe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Worker üzerinden dış adrese tanı isteği at
+         * @description Verilen adrese Worker'ın kendi çıkışından istek atar ve yanıtı olduğu gibi
+         *     gösterir. Amaç tek bir soruyu ölçerek yanıtlamak: **bir kaynak bizim hangi
+         *     ortamımızdan erişilebilir?**
+         *
+         *     Gerekçe: 9 Ağustos 2026'da eczaneler.gen.tr, GitHub Actions runner'ına
+         *     `403` verirken geliştirici makinesine `200` veriyordu — engel koda değil
+         *     çıkış IP'sine bağlıydı. Cloudflare'in çıkışı üçüncü bir ortamdır ve
+         *     tahmin etmek yerine denenebilir olmalıdır.
+         *
+         *     **Bu uç, ADR-003'ün "istek yolunda kaynağa gidilmez" kuralının bilinçli
+         *     istisnasıdır.** Okuma yolu değildir, veri döndürmez, hiçbir şeyi
+         *     önbelleğe almaz; yalnızca yöneticinin elle tetiklediği bir tanıdır.
+         *
+         *     Kötüye kullanımı sınırlayan kurallar:
+         *     - Oturum zorunlu.
+         *     - Yalnızca `http`/`https`. Başka şema reddedilir.
+         *     - **Kendi origin'imize istek atılamaz** — Worker'ın kendi API'sini
+         *       döngüye sokmak ya da oturumu dolaylı kullanmak engellenir.
+         *     - Yanıt gövdesi en fazla 64 KB okunur, fazlası kırpılır (`truncated`).
+         *     - İstek en fazla 20 saniye sürer.
+         *     - Her çağrı `audit_log`'a yazılır.
+         *     - Gelen çerez/kimlik başlıkları **iletilmez**; yalnızca `headers`
+         *       alanında açıkça verilenler gider.
+         */
+        post: operations["probeUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/scrape/runs": {
         parameters: {
             query?: never;
@@ -513,6 +555,43 @@ export interface components {
             /** @enum {string} */
             source: "edevlet";
             items: components["schemas"]["ImportItem"][];
+        };
+        ProbeHeader: {
+            name: string;
+            value: string;
+        };
+        ProbeRequest: {
+            /**
+             * @description Tam adres. Yalnızca `http`/`https`. Kendi origin'imiz reddedilir.
+             * @example https://www.eczaneler.gen.tr/iframe.php?lokasyon=7
+             */
+            url: string;
+            /**
+             * @default GET
+             * @enum {string}
+             */
+            method: "GET" | "POST";
+            /**
+             * @description Hedefe gönderilecek başlıklar. Burada verilmeyen hiçbir kimlik bilgisi
+             *     iletilmez — panelin oturum çerezi hedefe ASLA gitmez.
+             */
+            headers?: components["schemas"]["ProbeHeader"][];
+            /** @description Yalnızca `POST` için. Ham gövde, olduğu gibi gönderilir. */
+            body?: string | null;
+        };
+        ProbeResult: {
+            /** @description Hedefin HTTP durum kodu. */
+            status: number;
+            statusText: string;
+            /** @description İsteğin başından yanıtın okunmasına kadar geçen süre, milisaniye. */
+            durationMs: number;
+            headers: components["schemas"]["ProbeHeader"][];
+            /** @description Yanıt gövdesi metin olarak. En fazla 64 KB; fazlası kırpılır. */
+            body: string;
+            /** @description Kırpmadan ÖNCEKİ gövde uzunluğu, bayt. */
+            bodyBytes: number;
+            /** @description `true` ise gövde 64 KB sınırında kesildi. */
+            truncated: boolean;
         };
         ImportResult: {
             districtsCreated: number;
@@ -999,6 +1078,44 @@ export interface operations {
             };
             /** @description Tetikleme yapılandırılmamış (`GITHUB_DISPATCH_TOKEN` / `GITHUB_REPO` yok) */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    probeUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProbeRequest"];
+            };
+        };
+        responses: {
+            /**
+             * @description İstek tamamlandı. **Hedefin `4xx`/`5xx` dönmesi de `200`'dür** —
+             *     tanının başarısı, hedefin ne dediğini öğrenmektir.
+             */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProbeResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Hedefe hiç ulaşılamadı (DNS, bağlantı, zaman aşımı) */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };

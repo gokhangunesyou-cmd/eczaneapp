@@ -19,6 +19,8 @@ export type City = components['schemas']['City'];
 export type CalendarDay = components['schemas']['CalendarDay'];
 export type ScrapeRun = components['schemas']['ScrapeRun'];
 export type ScrapeTriggerResult = components['schemas']['ScrapeTriggerResult'];
+export type ProbeRequest = components['schemas']['ProbeRequest'];
+export type ProbeResult = components['schemas']['ProbeResult'];
 
 export class ApiClientError extends Error {
   readonly status: number;
@@ -181,6 +183,13 @@ export const adminTriggerScrape = (scope = 'tum', days: 'bugun' | 'yarin' | 'iki
   request<ScrapeTriggerResult>('/api/admin/scrape/trigger', {
     method: 'POST',
     body: JSON.stringify({ scope, days }),
+  });
+
+/** Tanı ucu: Worker'ın çıkışından dış adrese istek atar (ADR-007). */
+export const adminProbe = (input: ProbeRequest) =>
+  request<ProbeResult>('/api/admin/probe', {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 
 export const adminCreateDuty = (pharmacyId: number, date: string) =>

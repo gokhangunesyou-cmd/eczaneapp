@@ -197,6 +197,50 @@ export const scrapeRunInput = z.object({
   errorMessage: z.string().max(500).nullable().default(null),
 });
 
+// ─── Tanı ucu (ADR-007) ─────────────────────────────────────────────────────
+
+/**
+ * Hedefe İLETİLMEYECEK başlıklar.
+ *
+ * `host` yönlendirmeyi bozar, `content-length` gövdeden hesaplanır. İkisini de
+ * elle geçirmek yanıltıcı sonuç üretir; sessizce düşürmek yerine reddedilir ki
+ * kullanıcı neden dikkate alınmadığını bilsin.
+ */
+const FORBIDDEN_PROBE_HEADERS = new Set(['host', 'content-length']);
+
+const PROBE_HEADER = z.object({
+  name: z.string().trim().min(1).max(128),
+  value: z.string().max(1024),
+});
+
+/** `POST /api/admin/probe` */
+export const probeBody = z
+  .object({
+    url: z.string().trim().max(2048),
+    method: z.enum(['GET', 'POST']).default('GET'),
+    headers: z.array(PROBE_HEADER).max(20).default([]),
+    body: z.string().max(8192).nullable().default(null),
+  })
+  .refine(
+    (v) => {
+      try {
+        const u = new URL(v.url);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Adres http:// ya da https:// ile başlayan geçerli bir URL olmalı.', path: ['url'] },
+  )
+  .refine((v) => v.method === 'POST' || v.body === null || v.body === '', {
+    message: 'Gövde yalnızca POST ile gönderilebilir.',
+    path: ['body'],
+  })
+  .refine((v) => v.headers.every((h) => !FORBIDDEN_PROBE_HEADERS.has(h.name.toLowerCase())), {
+    message: 'host ve content-length başlıkları elle verilemez.',
+    path: ['headers'],
+  });
+
 /** Yol parametresi: sayısal id */
 export const idParam = z.object({ id: z.coerce.number().int().min(1) });
 

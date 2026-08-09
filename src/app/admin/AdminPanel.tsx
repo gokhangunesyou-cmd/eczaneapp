@@ -13,9 +13,10 @@ import {
 import { PharmacyForm } from './PharmacyForm';
 import { CalendarTab } from './CalendarTab';
 import { ScrapeTab } from './ScrapeTab';
+import { ProbeTab } from './ProbeTab';
 import { ErrorBox, SkeletonRows } from './ui';
 
-type Tab = 'calendar' | 'pharmacies' | 'scrape';
+type Tab = 'calendar' | 'pharmacies' | 'scrape' | 'probe';
 
 /** Seçilen il oturumlar arası hatırlanır — panelde en sık yapılan seçim bu. */
 const CITY_KEY = 'admin.city';
@@ -148,6 +149,9 @@ export function AdminPanel({ username, onLogout }: { username: string; onLogout:
         <TabButton active={tab === 'scrape'} onClick={() => setTab('scrape')}>
           Çekim
         </TabButton>
+        <TabButton active={tab === 'probe'} onClick={() => setTab('probe')}>
+          Tanı
+        </TabButton>
       </nav>
 
       <main style={{ maxWidth: 760, margin: '0 auto', padding: 'var(--s-18)' }}>
@@ -160,6 +164,7 @@ export function AdminPanel({ username, onLogout }: { username: string; onLogout:
           <PharmaciesTab key={cityCode} cityCode={cityCode} districts={districts} />
         )}
         {tab === 'scrape' && <ScrapeTab cityCode={cityCode} cityName={cityName} />}
+        {tab === 'probe' && <ProbeTab />}
       </main>
     </div>
   );

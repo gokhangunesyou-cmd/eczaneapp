@@ -17,6 +17,7 @@ import {
   scrapeTriggerBody,
   scrapeRunsQuery,
   scrapeRunInput,
+  probeBody,
   normalizePhone,
 } from '../schemas';
 import { verifyPassword, signSession, buildSessionCookie, clearSessionCookie } from '../lib/auth';
@@ -35,6 +36,7 @@ import {
   rateLimited,
   dispatchFailed,
   notConfigured,
+  ApiError,
 } from '../lib/errors';
 import { dutyDateOf, isoSeconds } from '@shared/duty';
 
@@ -105,6 +107,11 @@ adminRoutes.get('/me', requireAdmin, (c) => {
 });
 
 // Bundan sonraki her şey oturum ister.
+//
+// DİKKAT: bu liste yol yol yazılıyor, yani YENİ BİR UÇ EKLEYİP BURAYA
+// YAZMAMAK onu herkese açık bırakır. Bir kez oldu: `/probe` eklendiğinde
+// unutuldu ve uç oturumsuz erişilebilir kaldı — testi olmasa fark edilmezdi.
+// Yeni uç eklerken önce buraya bak.
 adminRoutes.use('/known-coords', requireAdmin);
 adminRoutes.use('/import', requireAdmin);
 adminRoutes.use('/pharmacies/*', requireAdmin);
@@ -112,6 +119,7 @@ adminRoutes.use('/pharmacies', requireAdmin);
 adminRoutes.use('/duties/*', requireAdmin);
 adminRoutes.use('/duties', requireAdmin);
 adminRoutes.use('/scrape/*', requireAdmin);
+adminRoutes.use('/probe', requireAdmin);
 
 // ─── Çekim komutu uçları (ADR-005) ──────────────────────────────────────────
 
@@ -206,6 +214,79 @@ adminRoutes.post('/scrape/trigger', validate('json', scrapeTriggerBody), async (
     days,
   };
   return c.json(body, 202, { 'Cache-Control': 'no-store' });
+});
+
+// ─── Tanı ucu (ADR-007) ─────────────────────────────────────────────────────
+
+/** Gövde bu boyutta kesilir. Worker belleğini ve CPU'sunu bir sayfa yemesin. */
+const PROBE_MAX_BODY_BYTES = 64 * 1024;
+const PROBE_TIMEOUT_MS = 20_000;
+
+/**
+ * Worker'ın kendi çıkışından dış adrese istek atar, yanıtı olduğu gibi gösterir.
+ *
+ * ADR-003 "istek yolunda kaynağa gidilmez" der; bu uç onun BİLİNÇLİ istisnasıdır.
+ * Okuma yolu değil, yöneticinin elle tetiklediği bir tanı: veri döndürmez,
+ * önbelleğe girmez, hiçbir şeyi D1'e yazmaz (denetim kaydı hariç).
+ *
+ * Var olma sebebi ölçülebilir bir soru: eczaneler.gen.tr GitHub Actions'a 403,
+ * geliştirici makinesine 200 veriyor. Cloudflare'in çıkışı üçüncü bir ortam ve
+ * tahmin etmek yerine denenebilir olmalı.
+ */
+adminRoutes.post('/probe', validate('json', probeBody), async (c) => {
+  const { url, method, headers, body } = c.req.valid('json');
+
+  const target = new URL(url);
+
+  // KENDİ ORIGIN'İMİZE İSTEK ATILAMAZ. İki sebep: Worker'ı kendi kendine
+  // çağırtıp döngüye sokmak, ve panelin arkasındaki uçlara dolaylı erişim
+  // denemek. Şemada yapılamaz — istek adresini bilmek gerekiyor.
+  if (target.host === new URL(c.req.url).host) {
+    throw badRequest('Kendi adresimize tanı isteği atılamaz.', [
+      { path: 'url', message: 'Dış bir adres ver.' },
+    ]);
+  }
+
+  const outgoing = new Headers();
+  for (const h of headers) outgoing.set(h.name, h.value);
+
+  const started = Date.now();
+  let res: Response;
+  try {
+    res = await fetch(target.toString(), {
+      method,
+      headers: outgoing,
+      ...(method === 'POST' && body !== null ? { body } : {}),
+      redirect: 'follow',
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+  } catch (e) {
+    // Ham hata istemciye sızmaz; sebebi ayırt edilebilir kalsın diye tür yazılır.
+    const reason = e instanceof Error && e.name === 'TimeoutError' ? 'zaman aşımı' : 'bağlantı yok';
+    throw new ApiError('source_unavailable', `Hedefe ulaşılamadı (${reason}).`);
+  }
+
+  const raw = await res.text();
+  const truncated = raw.length > PROBE_MAX_BODY_BYTES;
+
+  const result: components['schemas']['ProbeResult'] = {
+    status: res.status,
+    statusText: res.statusText,
+    durationMs: Date.now() - started,
+    headers: [...res.headers].map(([name, value]) => ({ name, value })),
+    body: truncated ? raw.slice(0, PROBE_MAX_BODY_BYTES) : raw,
+    bodyBytes: raw.length,
+    truncated,
+  };
+
+  // Bu uç dışarıya istek attırıyor; kimin nereye attığı kayıt altında olmalı.
+  await audit(c.env.DB, c.get('adminUser'), 'probe', null, {
+    url: target.toString(),
+    method,
+    status: res.status,
+  });
+
+  return c.json(result, 200, { 'Cache-Control': 'no-store' });
 });
 
 adminRoutes.get('/scrape/runs', validate('query', scrapeRunsQuery), async (c) => {
