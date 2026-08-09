@@ -137,7 +137,7 @@ export default function MapView({ items, user, selectedId, onSelect }: Props) {
     m.easeTo({ center: [user.lng, user.lat], duration: 600 });
   }, [user]);
 
-  // Eczane pinleri
+  // Eczane pinleri ve harita kamerasının odaklanması
   useEffect(() => {
     const m = map.current;
     if (!m) return;
@@ -145,10 +145,12 @@ export default function MapView({ items, user, selectedId, onSelect }: Props) {
     for (const mk of markers.current) mk.remove();
     markers.current = [];
 
+    const validItems: Pharmacy[] = [];
     for (const p of items) {
       // Koordinatı olmayan eczane haritada gösterilemez (ADR-005) — listede var,
       // pinde yok. Sessizce atlanır, hata değil.
       if (p.lat === null || p.lng === null) continue;
+      validItems.push(p);
       const el = pinElement(p, p.id === selectedId);
       el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -157,6 +159,22 @@ export default function MapView({ items, user, selectedId, onSelect }: Props) {
       markers.current.push(
         new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat]).addTo(m),
       );
+    }
+
+    // Kamera odaklanması: Seçili eczane varsa ona git; yoksa listedeki eczaneleri kadraja al.
+    const selected = validItems.find((p) => p.id === selectedId);
+    if (selected && selected.lat !== null && selected.lng !== null) {
+      m.flyTo({ center: [selected.lng, selected.lat], zoom: 14, duration: 600 });
+    } else if (validItems.length === 1) {
+      m.flyTo({ center: [validItems[0]!.lng!, validItems[0]!.lat!], zoom: 14, duration: 600 });
+    } else if (validItems.length > 1) {
+      const bounds = new maplibregl.LngLatBounds();
+      for (const p of validItems) bounds.extend([p.lng!, p.lat!]);
+      m.fitBounds(bounds, {
+        padding: { top: 80, bottom: 280, left: 40, right: 40 },
+        maxZoom: 15,
+        duration: 600,
+      });
     }
 
     return () => {
