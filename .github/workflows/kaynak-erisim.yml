@@ -1,0 +1,38 @@
+# Kaynak erişim tanısı — elle çalıştırılır, veri YAZMAZ.
+#
+# Neden var: 9 Ağustos 2026'da çekim GitHub Actions'ta 81 ilin 81'inde HTTP 403
+# aldı, aynı dakikada aynı komut geliştiricinin makinesinden 81/81 başarılıydı.
+# Yani sorun kodda değil, runner'ın çıkış IP'sindeydi. Böyle bir durumda "kaynak
+# mı bozuldu, biz mi engellendik" sorusunu tahminle değil ölçerek yanıtlamak
+# gerekiyor.
+#
+# Kaynağa toplam ÜÇ istek atar (il başına değil), veri yazmaz, hiçbir secret
+# kullanmaz. Sonuç sadece log'a basılır.
+
+name: kaynak-erisim
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tani:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Runner'ın çıkış IP'si
+        run: curl -s --max-time 20 https://api.ipify.org || echo "IP alınamadı"
+
+      - name: eczaneler.gen.tr (mevcut kaynak)
+        run: |
+          curl -s --max-time 25 -o /tmp/gen.html -w "HTTP %{http_code}  ·  %{size_download} bayt\n" \
+            -A "nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com; nobetci eczane bilgilendirme servisi)" \
+            "https://www.eczaneler.gen.tr/iframe.php?lokasyon=7"
+          echo "eczane bloğu sayısı: $(grep -o "alt='eczane'" /tmp/gen.html | wc -l)"
+
+      - name: turkiye.gov.tr (yedek kaynak, ADR-005)
+        run: |
+          curl -s --max-time 25 -o /tmp/edv.html -w "HTTP %{http_code}  ·  %{size_download} bayt\n" \
+            -A "nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com; nobetci eczane bilgilendirme servisi)" \
+            "https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama"
+          echo "form token bulundu mu: $(grep -c 'name="token"' /tmp/edv.html)"

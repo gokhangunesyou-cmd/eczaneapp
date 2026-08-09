@@ -50,6 +50,15 @@ const UA =
 /** İçe aktarma şeması tek çağrıda 500 kayıtla sınırlı. */
 const IMPORT_CHUNK = 400;
 
+/**
+ * Bu kadar il üst üste başarısız olursa koşu durur.
+ *
+ * Tek ilin bozulması normaldir; arka arkaya beşi bozulmuyor. Böyle bir dizi
+ * "kaynak bize kapalı" demektir ve devam etmek kaynağa 80 gereksiz istek daha
+ * yollamak olur.
+ */
+const CONSECUTIVE_FAILURE_LIMIT = 5;
+
 // ─── Argümanlar ─────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
@@ -314,11 +323,13 @@ async function main() {
   const results = [];
   const failures = [];
   let aborted = null;
+  let consecutive = 0;
 
   for (const city of cities) {
     try {
       const r = await scrapeCity(city, now);
       results.push(r);
+      consecutive = 0;
       console.log(
         `  ${city.name.padEnd(16)} ${String(r.rowsFound).padStart(3)} eczane` +
           `  ${String(r.withCoords).padStart(3)} koordinat` +
@@ -342,6 +353,16 @@ async function main() {
         outcome: 'error',
         errorMessage: e.message.slice(0, 500),
       });
+
+      // Arka arkaya hata artık "tek il bozuk" değildir: kaynak bize kapalı.
+      // Devam etmek 80 kez daha kapıya vurmak olur. Bir kez yaşandı — Actions
+      // runner'ı 403 yerken 81 ilin hepsi tek tek denendi (ADR-007).
+      if (++consecutive >= CONSECUTIVE_FAILURE_LIMIT) {
+        aborted =
+          `${consecutive} il üst üste başarısız (son hata: ${e.message.split('\n')[0]}) — ` +
+          `kaynak bu ortamdan erişilebilir değil, kalan iller denenmiyor.`;
+        break;
+      }
     }
   }
 
@@ -382,20 +403,29 @@ try {
     console.warn('');
   }
 
-  if (aborted) {
-    process.stderr.write(`KAYNAK GERİ ÇEKİLME İSTEDİ: ${aborted}\n`);
-    process.stderr.write(`Buraya kadar çekilenler yazıldı. Bir süre sonra tekrar dene.\n\n`);
-    process.exit(1);
-  }
-
   if (failures.length > 0) {
     console.warn(`${failures.length} il çekilemedi:`);
     for (const f of failures) console.warn(`  ${f.city.name} — ${f.message}`);
     console.warn('');
-    process.exit(2); // sessizce başarılı sayma
   }
 
-  if (skippedRows.length > 0) process.exit(2);
+  if (aborted) {
+    process.stderr.write(`ÇEKİM YARIDA KESİLDİ: ${aborted}\n`);
+    process.stderr.write(`Buraya kadar çekilenler yazıldı.\n\n`);
+    process.exit(1);
+  }
+
+  // HİÇBİR il yazılamadıysa bu kısmi başarı DEĞİLDİR, tam başarısızlıktır ve
+  // kırmızı dönmelidir. Bir kez tam tersi yaşandı: Actions koşusunda 81 ilin
+  // 81'i 403 aldı, çıkış kodu 2 olduğu için iş akışı YEŞİL bitti ve prod'a hiç
+  // veri yazılmadığı fark edilmedi (ADR-007).
+  if (results.length === 0) {
+    process.stderr.write(`HİÇBİR İL ÇEKİLEMEDİ — prod'a veri yazılmadı.\n\n`);
+    process.exit(1);
+  }
+
+  // Buradan sonrası gerçekten kısmi: bir şeyler yazıldı ama eksik kaldı.
+  if (failures.length > 0 || skippedRows.length > 0) process.exit(2);
 } catch (e) {
   process.stderr.write(`\nHATA: ${e.message}\n\n`);
   process.exit(1);
