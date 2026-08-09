@@ -117,22 +117,34 @@ let requestCount = 0;
 /** Kaynak zorlanıyor: TÜM koşu durur. Diğer hatalar il bazında yutulur. */
 class SourceBackoff extends Error {}
 
+const SCRAPER_KEY = flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? 'fa9fdd79addee111a7a7da600e573066';
+
 async function fetchCity(cityCode) {
   if (requestCount > 0) await sleep(DELAY);
   requestCount++;
 
+  const rawUrl = `${BASE}${PATH}?lokasyon=${cityCode}`;
+  const targetUrl = SCRAPER_KEY
+    ? `https://api.scraperapi.com?api_key=${encodeURIComponent(SCRAPER_KEY)}&url=${encodeURIComponent(rawUrl)}`
+    : rawUrl;
+
   let res;
   try {
-    res = await fetch(`${BASE}${PATH}?lokasyon=${cityCode}`, {
+    res = await fetch(targetUrl, {
       redirect: 'follow',
-      headers: {
-        'User-Agent': UA,
-        'Accept-Language': 'tr-TR,tr;q=0.9',
-        Accept: 'text/html,application/xhtml+xml',
-      },
+      ...(SCRAPER_KEY
+        ? {}
+        : {
+            headers: {
+              'User-Agent': UA,
+              'Accept-Language': 'tr-TR,tr;q=0.9',
+              Accept: 'text/html,application/xhtml+xml',
+            },
+          }),
     });
   } catch (e) {
-    throw new SourceBackoff(`Kaynağa ulaşılamadı: ${e.message}`);
+    const cause = e.cause ? ` [cause: ${e.cause.message ?? e.cause.code ?? e.cause}]` : '';
+    throw new SourceBackoff(`Kaynağa ulaşılamadı: ${e.message}${cause}`);
   }
 
   if (res.status === 429 || res.status >= 500) {

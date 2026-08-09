@@ -72,6 +72,7 @@ jobs:
         env:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY || 'fa9fdd79addee111a7a7da600e573066' }}
           # Secret shell gövdesine gömülmez, ortamdan okunur: boş kaldığında
           # sessizce bozuk bir argümana dönüşmesin.
           API_URL: ${{ secrets.API_URL }}

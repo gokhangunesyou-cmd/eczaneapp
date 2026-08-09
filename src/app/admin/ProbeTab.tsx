@@ -21,6 +21,10 @@ import { inputStyle } from './styles';
 /** Hazır denemeler — asıl soruyu tek tıkla sormak için. */
 const PRESETS: { label: string; url: string }[] = [
   { label: 'eczaneler.gen.tr', url: 'https://www.eczaneler.gen.tr/iframe.php?lokasyon=7' },
+  {
+    label: 'eczaneler.gen.tr (ScraperAPI)',
+    url: 'https://api.scraperapi.com?api_key=fa9fdd79addee111a7a7da600e573066&url=https://www.eczaneler.gen.tr/iframe.php?lokasyon=7',
+  },
   { label: 'e-Devlet', url: 'https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama' },
 ];
 
