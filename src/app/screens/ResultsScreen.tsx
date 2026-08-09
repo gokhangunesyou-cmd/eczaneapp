@@ -30,7 +30,8 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
     let alive = true;
 
     getOnDuty({
-      ...(user ? { lat: user.lat, lng: user.lng } : {}),
+      // İlçe verilmişse konum gönderilmez (API kuralı: konum ve ilçe birlikte verilemez).
+      ...(user && !district ? { lat: user.lat, lng: user.lng } : {}),
       // İl verilmezse sunucu konumdan çözer (ADR-006); elle seçim onu ezer.
       ...(city ? { city: city.code } : {}),
       ...(district ? { district: district.code } : {}),
