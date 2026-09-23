@@ -98,6 +98,13 @@ function PublicApp({
   const [selectedPharmacy, setSelectedPharmacy] = useState<Pharmacy | null>(null);
   const [settledDutyKey, setSettledDutyKey] = useState<string | null>(null);
 
+  // Ana sayfaya girildiğinde henüz konum istenmediyse tarayıcıdan otomatik izin iste
+  useEffect(() => {
+    if (pathname === '/' && state.status === 'idle') {
+      request();
+    }
+  }, [pathname, state.status, request]);
+
   // Rota senkronu, adres değişince gezinme kipini kapatır. Ama il seçildiğinde
   // hem adres değişir HEM de ilçe seçim ekranı açık kalmalıdır; o tek durumda
   // senkrona "kipe dokunma" denir.
@@ -234,13 +241,28 @@ function PublicApp({
   // "Yükleniyor" ayrı bir state DEĞİL, türetilmiş bir değer: sonucu gelmiş
   // sorgunun kimliği güncel sorgununkinden farklıysa yükleniyoruzdur. Efekt
   // gövdesinde senkron setState yapmadan aynı sonucu verir.
-  const isGps = state.status === 'granted' && !city && !district;
+  const isGps = state.status === 'granted' && (pathname === '/' || !district);
   const dutyQueryKey = JSON.stringify([
     isGps ? [state.lat, state.lng] : null,
     city?.code ?? null,
     district?.code ?? null,
   ]);
   const loadingPharmacies = settledDutyKey !== dutyQueryKey;
+
+  // GPS ile gelen yanıttan kullanıcının çözümlenen ilini eşle
+  useEffect(() => {
+    if (isGps && pharmaciesData?.cityCode && cities.length > 0) {
+      const detected = cities.find((c) => c.code === pharmaciesData.cityCode);
+      if (detected && detected.code !== city?.code) {
+        setCity({
+          code: detected.code,
+          name: detected.name,
+          lat: detected.lat,
+          lng: detected.lng,
+        });
+      }
+    }
+  }, [isGps, pharmaciesData?.cityCode, cities, city?.code]);
 
   useEffect(() => {
     let alive = true;
