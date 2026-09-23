@@ -13,11 +13,11 @@ import type { Pharmacy } from '@app/lib/api';
  * Sağlayıcı değişirse bu dosya DEĞİŞMEZ.
  */
 
-const STYLE_URL = import.meta.env.VITE_MAP_STYLE_URL as string | undefined;
+const DEFAULT_STYLE_URL = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+const STYLE_URL =
+  (import.meta.env.VITE_MAP_STYLE_URL as string | undefined) || DEFAULT_STYLE_URL;
 
-// Harita yapılandırması yoksa uygulama sessizce haritasız çalışır (liste yine
-// doğrudur). Sessizlik teşhisi imkânsızlaştırdığı için durum kök elemente
-// yazılır — kullanıcıya görünmez, incelerken görünür.
+// Harita yapılandırma durumu kök elemente yazılır
 if (typeof document !== 'undefined') {
   document.documentElement.dataset.mapConfig = STYLE_URL ? 'ok' : 'eksik';
 }
