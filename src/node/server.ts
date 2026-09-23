@@ -40,11 +40,41 @@ function triggerLocalScrape(scope: string, days: string) {
   child.unref();
 }
 
+async function getAdminPasswordHash(): Promise<string> {
+  const envHash = process.env.ADMIN_PASSWORD_HASH || '';
+  // Eğer hash düzgün verilmişse (en az 3 tane $ içeriyorsa) kullan
+  if (envHash.split('$').length >= 5) {
+    return envHash;
+  }
+  // Docker Compose $ interpolation yüzünden bozulmuşsa veya sadece ADMIN_PASSWORD verilmişse
+  const password = process.env.ADMIN_PASSWORD;
+  if (password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits'],
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 60000 },
+      key,
+      256,
+    );
+    const b64 = (buf: ArrayBuffer | Uint8Array) => Buffer.from(buf).toString('base64');
+    return `pbkdf2$sha256$60000$${b64(salt)}$${b64(bits)}`;
+  }
+  return envHash;
+}
+
+const adminPasswordHash = await getAdminPasswordHash();
+
 // Cloudflare Worker ortam değişkenlerini simüle et
 const envBindings: AppEnv['Bindings'] = {
   DB: db as any,
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
-  ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || '',
+  ADMIN_PASSWORD_HASH: adminPasswordHash,
   SESSION_SECRET: process.env.SESSION_SECRET || 'nobetci-session-secret-change-in-production-1234567890',
   SESSION_TTL_SECONDS: process.env.SESSION_TTL_SECONDS || '604800',
   SUPPORTED_CITY_CODE: process.env.SUPPORTED_CITY_CODE || '7',
