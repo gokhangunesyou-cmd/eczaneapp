@@ -5,6 +5,16 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Coolify build argümanları (Vite derleme anında gömer)
+ARG VITE_MAP_STYLE_URL
+ARG VITE_MAP_DEFAULT_LAT
+ARG VITE_MAP_DEFAULT_LNG
+ARG VITE_MAP_DEFAULT_ZOOM
+ENV VITE_MAP_STYLE_URL=$VITE_MAP_STYLE_URL
+ENV VITE_MAP_DEFAULT_LAT=$VITE_MAP_DEFAULT_LAT
+ENV VITE_MAP_DEFAULT_LNG=$VITE_MAP_DEFAULT_LNG
+ENV VITE_MAP_DEFAULT_ZOOM=$VITE_MAP_DEFAULT_ZOOM
+
 # Bağımlılık dosyalarını kopyala ve yükle
 COPY package.json package-lock.json ./
 RUN npm ci
