@@ -118,7 +118,7 @@ let requestCount = 0;
 class SourceBackoff extends Error {}
 
 const SCRAPER_KEY =
-  flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? 'fa9fdd79addee111a7a7da600e573066';
+  flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? '';
 
 async function fetchCity(cityCode) {
   if (requestCount > 0) await sleep(DELAY);
