@@ -30,6 +30,7 @@ export default defineConfig({
           include: [
             'src/app/**/*.test.{ts,tsx}',
             'src/shared/**/*.test.ts',
+            'src/mcp/**/*.test.ts',
             'scripts/**/*.test.mjs',
           ],
           setupFiles: ['./tests/setup-app.ts'],

@@ -1,33 +1,49 @@
 /**
- * Yol tarifi — kullanıcının kendi harita uygulamasına deep link.
+ * Yol tarifi — kullanıcının cihazındaki yerel harita uygulamasına yönlendirme.
  *
- * ADR-002: yönlendirme motoru KULLANILMIYOR. Ne anahtar, ne kota, ne sunucu.
- * Kullanıcı sesli navigasyonu zaten alışkın olduğu uygulamada alır.
+ * Mobil cihazlarda (Android / iOS) cihazın kendi native harita seçim ve yönlendirme
+ * mekanizması tetiklenir (Android'de `geo:` intent picker, iOS'ta `maps://` şeması).
+ * Masaüstü tarayıcılarda Google Maps sekmesi açılır.
  */
 
-const isIOS = (): boolean =>
+export const isIOS = (): boolean =>
   typeof navigator !== 'undefined' &&
   (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    // iPadOS 13+ kendini Mac gibi tanıtır.
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
+export const isAndroid = (): boolean =>
+  typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+
+export const isMobile = (): boolean =>
+  typeof navigator !== 'undefined' &&
+  (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 /**
  * Hedefe sürüş yol tarifi açar.
- *
- * Android → Google Maps native
- * iOS     → Google Maps kuruluysa o, değilse Apple Maps
- * Masaüstü→ Google Maps web
+ * Android cihazlarda `geo:` intent protokolü ile işletim sisteminin kendi harita seçici popup'ını tetikler.
+ * iOS cihazlarda `maps://` protokolü ile harita uygulamasını açar.
+ * Masaüstünde Google Maps web sekmesinde açar.
  */
 export function openDirections(lat: number, lng: number, label?: string): void {
   const dest = `${lat},${lng}`;
+  const encodedLabel = label ? encodeURIComponent(label) : '';
+
+  if (isAndroid()) {
+    // Android `geo:` URI şeması: Telefon cihazdaki yüklü harita uygulamalarını (Google Maps, Yandex Navi, Waze vb.) kendi yerel popup'ı ile sunar.
+    const geoUri = label ? `geo:${dest}?q=${dest}(${encodedLabel})` : `geo:${dest}?q=${dest}`;
+    window.location.href = geoUri;
+    return;
+  }
 
   if (isIOS()) {
-    // Apple Maps evrensel şeması; Google Maps kuruluysa iOS onu önerir.
-    const q = label ? `&q=${encodeURIComponent(label)}` : '';
+    // iOS `maps://` URI şeması: Apple Haritalar ve iOS native harita istemcisini tetikler.
+    const q = encodedLabel ? `&q=${encodedLabel}` : '';
     window.location.href = `maps://?daddr=${dest}&dirflg=d${q}`;
     return;
   }
 
+  // Masaüstü web tarayıcıları için Google Maps
   window.open(
     `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`,
     '_blank',

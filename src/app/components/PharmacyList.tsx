@@ -12,10 +12,11 @@ export function PharmacyList({
   onSelect,
 }: {
   items: Pharmacy[];
-  selectedId?: string;
+  selectedId?: string | undefined;
   onSelect: (p: Pharmacy) => void;
 }) {
-  if (items.length === 0) return null;
+  const openItems = items.filter((p) => p.status !== 'closed');
+  if (openItems.length === 0) return null;
 
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
@@ -34,7 +35,7 @@ export function PharmacyList({
       </h3>
 
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {items.map((p) => {
+        {openItems.map((p) => {
           const closed = p.status === 'closed';
           return (
             <li key={p.id}>

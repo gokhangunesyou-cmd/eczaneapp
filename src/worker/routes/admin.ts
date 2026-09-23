@@ -167,8 +167,9 @@ adminRoutes.post('/scrape/trigger', validate('json', scrapeTriggerBody), async (
 
   const repo = c.env.GITHUB_REPO ?? '';
   const token = c.env.GITHUB_DISPATCH_TOKEN ?? '';
+  const isLocalScrape = (c.env as any).LOCAL_SCRAPE === '1';
 
-  if (!repo || !token) {
+  if (!isLocalScrape && (!repo || !token)) {
     throw notConfigured(
       'Çekim tetikleme bu ortamda kurulu değil. GITHUB_REPO ve GITHUB_DISPATCH_TOKEN gerekiyor.',
     );
@@ -181,29 +182,36 @@ adminRoutes.post('/scrape/trigger', validate('json', scrapeTriggerBody), async (
     throw rateLimited('Çekim az önce tetiklendi. Kaynağa yüklenmemek için 10 dakika bekle.');
   }
 
-  let res: Response;
-  try {
-    res = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': '2022-11-28',
-        // GitHub API User-Agent olmadan 403 döner.
-        'User-Agent': 'nobetci-eczane-panel',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ event_type: 'scrape', client_payload: { scope, days } }),
-    });
-  } catch {
-    // Ağ hatasının ham metni istemciye sızmaz.
-    throw dispatchFailed("GitHub'a ulaşılamadı. Biraz sonra tekrar dene.");
-  }
+  if (isLocalScrape) {
+    const fn = (c.env as any).TRIGGER_SCRAPE_FN;
+    if (typeof fn === 'function') {
+      fn(scope, days);
+    }
+  } else {
+    let res: Response;
+    try {
+      res = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          // GitHub API User-Agent olmadan 403 döner.
+          'User-Agent': 'nobetci-eczane-panel',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ event_type: 'scrape', client_payload: { scope, days } }),
+      });
+    } catch {
+      // Ağ hatasının ham metni istemciye sızmaz.
+      throw dispatchFailed("GitHub'a ulaşılamadı. Biraz sonra tekrar dene.");
+    }
 
-  if (res.status !== 204) {
-    throw dispatchFailed(
-      `Çekim başlatılamadı (GitHub ${res.status}). Yetkiyi ve depo adını kontrol et.`,
-    );
+    if (res.status !== 204) {
+      throw dispatchFailed(
+        `Çekim başlatılamadı (GitHub ${res.status}). Yetkiyi ve depo adını kontrol et.`,
+      );
+    }
   }
 
   await audit(c.env.DB, c.get('adminUser'), 'scrape.trigger', null, { scope, days });

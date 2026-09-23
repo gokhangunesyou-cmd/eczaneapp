@@ -1,24 +1,33 @@
 /**
- * Worker girişi — API + statik varlıklar tek deploy.
- *
- * Statik varlık istekleri Worker'a hiç uğramaz (wrangler.jsonc `run_worker_first`
- * yalnızca /api/* için açık); bu yüzden ücretsiz plandaki 100.000 istek/gün
- * kotasından yalnızca gerçek API çağrıları düşer.
+ * Worker girişi — API, SEO varlıkları + statik varlıklar tek deploy.
  */
 
 import { Hono } from 'hono';
 import type { AppEnv } from './env';
 import { publicRoutes } from './routes/public';
 import { adminRoutes } from './routes/admin';
+import { seoRoutes } from './routes/seo';
 import { ApiError, internal } from './lib/errors';
 
-const app = new Hono<AppEnv>().basePath('/api');
+const app = new Hono<AppEnv>();
 
-app.route('/', publicRoutes);
-app.route('/admin', adminRoutes);
+// SEO kök yolları (/sitemap.xml, /robots.txt)
+app.route('/', seoRoutes);
+
+// API yolları (/api/*)
+const api = new Hono<AppEnv>();
+api.route('/', publicRoutes);
+api.route('/admin', adminRoutes);
+
+app.route('/api', api);
 
 // Bilinmeyen API yolu — SPA fallback'ine düşmemeli.
-app.notFound((c) => c.json({ error: { code: 'not_found', message: 'Böyle bir uç yok.' } }, 404));
+app.notFound((c) => {
+  if (c.req.path.startsWith('/api')) {
+    return c.json({ error: { code: 'not_found', message: 'Böyle bir uç yok.' } }, 404);
+  }
+  return c.text('Not Found', 404);
+});
 
 /**
  * Tek hata çıkışı. Ham hata İSTEMCİYE SIZMAZ: stack trace, SQL metni ve

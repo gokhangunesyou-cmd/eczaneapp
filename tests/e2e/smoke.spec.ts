@@ -16,8 +16,8 @@ test('konum izni verilince en yakın nöbetçi eczane görünür', async ({ page
 
   // Kart geldi: ad, mesafe, durum rozeti ve iki aksiyon.
   await expect(page.getByRole('heading', { level: 2 })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole('button', { name: 'Yol Tarifi', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Ara', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Yol Tarifi Al', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adresi Kopyala', exact: true })).toBeVisible();
   await expect(page.getByText(/dk araçla/)).toBeVisible();
 });
 
@@ -29,19 +29,19 @@ test('konum reddedilince il → ilçe seçimi çalışır', async ({ page, conte
 
   // Kapsam 81 il (ADR-006): önce il, sonra ilçe.
   await expect(page.getByRole('heading', { name: /ilini seçer misin/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Antalya', exact: true }).click();
+  await page.getByRole('button', { name: 'Antalya' }).click();
 
   await expect(page.getByRole('heading', { name: /ilçeni seçer misin/ })).toBeVisible();
 
   // BELİRLİ bir ilçe seçilmez: merkez ilçelerde nöbet yalnızca akşam başlıyor
   // (ADR-005), gündüz koşan test boş liste görür ve haksız yere kırmızıya döner.
   // Nöbetçisi OLAN ilk ilçe seçilir — kullanıcının yapacağı şey de bu.
-  const withDuty = page.getByRole('button', { name: /\d+ nöbetçi$/ }).first();
+  const withDuty = page.getByRole('button', { name: /nöbetçi/ }).first();
   await expect(withDuty).toBeVisible({ timeout: 10_000 });
   await withDuty.click();
 
   // İlçe görünümünde mesafe yok; ad ve aksiyonlar var.
-  await expect(page.getByRole('button', { name: 'Yol Tarifi', exact: true })).toBeVisible({
+  await expect(page.getByRole('button', { name: 'Yol Tarifi Al', exact: true })).toBeVisible({
     timeout: 10_000,
   });
 });
@@ -63,5 +63,5 @@ test('panel oturumsuz girilemez, admin/admin ile girilir', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Yeni eczane' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Çekim' }).click();
-  await expect(page.getByRole('button', { name: 'e-Devlet çekimini tetikle' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Çekimi şimdi tetikle' })).toBeVisible();
 });

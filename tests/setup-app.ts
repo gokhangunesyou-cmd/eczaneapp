@@ -24,6 +24,26 @@ beforeEach(() => {
     }));
   }
 
+  // Bu kurulumda jsdom'un localStorage'ı çalışmıyor (metotları yok).
+  // Bellekte tutan basit bir karşılığı konur; her test temiz başlar.
+  if (typeof window.localStorage?.getItem !== 'function') {
+    const store = new Map<string, string>();
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, String(v)),
+        removeItem: (k: string) => void store.delete(k),
+        clear: () => store.clear(),
+        key: (i: number) => [...store.keys()][i] ?? null,
+        get length() {
+          return store.size;
+        },
+      },
+    });
+  }
+  window.localStorage.clear();
+
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}

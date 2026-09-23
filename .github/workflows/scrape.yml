@@ -12,20 +12,13 @@
 #
 # Gerekli repo secret'ları:  API_URL, ADMIN_USERNAME, ADMIN_PASSWORD
 
+# GÜNCELLEME: Çekim artık yerel sunucudaki (Coolify) zamanlanmış görevle koşuyor.
+# GitHub runner'ları kaynak tarafından 403 engeli aldığı için otomatik schedule
+# ve repository_dispatch devre dışı bırakıldı. Yalnızca elle tetikleme (workflow_dispatch) açık.
+
 name: scrape
 
 on:
-  schedule:
-    # UTC. Türkiye kalıcı UTC+3, yaz saati yok.
-    #
-    # SAATLER KAYNAĞA GÖRE SEÇİLDİ (ADR-007): eczaneler.gen.tr yalnızca O ANKİ
-    # günü veriyor, "yarın" diye bir sorgusu yok. Bu yüzden çekim rotasyondan
-    # ÖNCE değil, SONRA koşmalı — yoksa dünün listesi bugüne yazılır.
-    #
-    # 05:15Z = 08:15 TRT → nöbet 08:00'de döndükten hemen sonra, günün listesi.
-    # 11:00Z = 14:00 TRT → gün içi düzeltmeleri yakalayan ikinci koşu.
-    - cron: "15 5 * * *"
-    - cron: "0 11 * * *"
   workflow_dispatch:
     inputs:
       scope:
@@ -36,8 +29,6 @@ on:
         description: "yalnızca bugun — kaynak başka gün sunmuyor"
         required: false
         default: "bugun"
-  repository_dispatch:
-    types: [scrape]
 
 # Aynı anda iki çekim koşmasın — kaynağa çift yük binmesin, içe aktarma
 # birbirini ezmesin.

@@ -6,18 +6,36 @@ import { BottomSheet, type SheetStage } from '@app/components/BottomSheet';
 import { SheetSkeleton, MapPlaceholder } from '@app/components/Skeleton';
 import { formatTrDate, formatTrTime } from '@shared/duty';
 
+import { SeoHead } from '@app/components/SeoHead';
+import { slugify } from '@shared/slug';
+
 // MapLibre ayrı chunk — ilk boyanma haritayı beklemez (ADR-002).
 const MapView = lazy(() => import('@app/components/MapView'));
 
 type Props = {
   user?: { lat: number; lng: number };
-  city?: { code: number; name: string };
+  city?: {
+    code: number;
+    name: string;
+    lat?: number | null | undefined;
+    lng?: number | null | undefined;
+  };
   district?: { code: string; name: string };
   onChangeDistrict: () => void;
   onChangeCity: () => void;
+  onUseLocation?: () => void;
+  onOpenPharmacyProfile?: (pharmacy: Pharmacy) => void;
 };
 
-export function ResultsScreen({ user, city, district, onChangeDistrict, onChangeCity }: Props) {
+export function ResultsScreen({
+  user,
+  city,
+  district,
+  onChangeDistrict,
+  onChangeCity,
+  onUseLocation,
+  onOpenPharmacyProfile,
+}: Props) {
   const [data, setData] = useState<PharmacyList | null>(null);
   const [error, setError] = useState<ApiClientError | null>(null);
   const [selected, setSelected] = useState<Pharmacy | null>(null);
@@ -30,8 +48,8 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
     let alive = true;
 
     getOnDuty({
-      // İlçe verilmişse konum gönderilmez (API kuralı: konum ve ilçe birlikte verilemez).
-      ...(user && !district ? { lat: user.lat, lng: user.lng } : {}),
+      // İl veya ilçe verilmişse konum gönderilmez (farklı ildeki harita/mesafe karışıklığını önler).
+      ...(user && !city && !district ? { lat: user.lat, lng: user.lng } : {}),
       // İl verilmezse sunucu konumdan çözer (ADR-006); elle seçim onu ezer.
       ...(city ? { city: city.code } : {}),
       ...(district ? { district: district.code } : {}),
@@ -86,7 +104,35 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
   }
 
   const open = data?.items.filter((p) => p.status !== 'closed') ?? [];
-  const others = data ? data.items.filter((p) => p.id !== selected?.id) : [];
+  const others = data
+    ? data.items.filter((p) => p.id !== selected?.id && p.status !== 'closed')
+    : [];
+
+  const BASE_URL = 'https://nobetcieczane.becayisler.com';
+  const cSlug = city ? slugify(city.name) : undefined;
+  const dSlug = district ? slugify(district.name) : undefined;
+
+  let seoTitle = 'Nöbetçi Eczaneler — En Yakın Nöbetçi Eczaneyi Bul';
+  let seoDesc =
+    'Konumunuza en yakın nöbetçi eczaneyi harita üzerinde anında görün. Harita, telefon ve adres bilgileri ile nöbetçi eczane bulma.';
+  let seoCanon = BASE_URL + '/';
+  const breadcrumbs = [{ name: 'Ana Sayfa', url: BASE_URL + '/' }];
+
+  if (district && city) {
+    seoTitle = `${city.name} ${district.name} Nöbetçi Eczaneleri — Bugün Açık Eczaneler`;
+    seoDesc = `${city.name} ${district.name} nöbetçi eczaneleri güncel nöbet listesi, açık eczane adresi, telefon numarası ve harita konumu.`;
+    seoCanon = `${BASE_URL}/${cSlug}-${dSlug}-nobetci-eczane`;
+    breadcrumbs.push({
+      name: `${city.name} Nöbetçi Eczaneleri`,
+      url: `${BASE_URL}/${cSlug}-nobetci-eczane`,
+    });
+    breadcrumbs.push({ name: `${district.name} Nöbetçi Eczaneleri`, url: seoCanon });
+  } else if (city) {
+    seoTitle = `${city.name} Nöbetçi Eczaneleri — Bugün Açık Eczaneler`;
+    seoDesc = `${city.name} nöbetçi eczaneleri güncel nöbet listesi, harita konumu ve telefon bilgileri.`;
+    seoCanon = `${BASE_URL}/${cSlug}-nobetci-eczane`;
+    breadcrumbs.push({ name: `${city.name} Nöbetçi Eczaneleri`, url: seoCanon });
+  }
 
   return (
     <div
@@ -97,13 +143,22 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
         background: 'var(--bg)',
       }}
     >
+      <SeoHead
+        title={seoTitle}
+        description={seoDesc}
+        canonicalUrl={seoCanon}
+        pharmacies={data?.items}
+        breadcrumbs={breadcrumbs}
+      />
+
       <MapPlaceholder shimmer={!data} />
 
       {data && (
         <Suspense fallback={null}>
           <MapView
             items={data.items.filter((p) => p.status !== 'closed')}
-            {...(user ? { user } : {})}
+            {...(user && !city && !district ? { user } : {})}
+            {...(city ? { city } : {})}
             {...(selected ? { selectedId: selected.id } : {})}
             onSelect={(p) => {
               setSelected(p);
@@ -118,27 +173,91 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
           position: 'absolute',
           top: 'calc(env(safe-area-inset-top, 0px) + var(--s-16))',
           left: 'var(--s-22)',
+          right: 'var(--s-22)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          zIndex: 50,
           pointerEvents: 'none',
         }}
       >
-        <span
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, pointerEvents: 'auto' }}>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 17,
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            {district ? `${city?.name ?? ''} ${district.name}` : city ? city.name : 'nöbetçi'}
+          </h1>
+          <span className="tnum" style={{ fontSize: 13, color: 'var(--text-3)' }}>
+            {data ? `${formatTrDate(data.nextRotationAt)}'a kadar` : '…'}
+          </span>
+        </div>
+
+        <button
+          onClick={() => {
+            if (city) {
+              onChangeDistrict();
+            } else {
+              onChangeCity();
+            }
+          }}
+          aria-label="İl ilçe düzenle"
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 17,
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
+            pointerEvents: 'auto',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border-2)',
+            borderRadius: 20,
+            padding: '8px 16px',
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'var(--brand-soft-fg)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(8px)',
           }}
         >
-          nöbetçi
-        </span>
-        <span className="tnum" style={{ fontSize: 13, color: 'var(--text-3)' }}>
-          {data ? `${formatTrDate(data.nextRotationAt)}'a kadar` : '…'}
-          {city && ` · ${city.name}`}
-          {district && ` · ${district.name}`}
-        </span>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span>
+            {district
+              ? `${city?.name ?? ''} · ${district.name}`
+              : city
+                ? city.name
+                : 'Konumuna göre'}
+          </span>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+        </button>
       </header>
 
       {data?.stale && <StaleBanner dataAsOf={data.dataAsOf} />}
@@ -150,7 +269,14 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
           <EmptyState district={district?.name} onChangeDistrict={onChangeDistrict} />
         )}
 
-        {selected && <PharmacyCard item={selected} offline={data?.stale} />}
+        {selected && (
+          <PharmacyCard
+            item={selected}
+            offline={data?.stale}
+            onOpenProfile={onOpenPharmacyProfile}
+            citySlug={cSlug}
+          />
+        )}
 
         {stage !== 'peek' && (
           <ListView
@@ -162,9 +288,21 @@ export function ResultsScreen({ user, city, district, onChangeDistrict, onChange
 
         {stage === 'full' && (
           <>
+            {onUseLocation && (city || district) && (
+              <button
+                className="btn-ghost"
+                style={{ height: 56, marginTop: 'var(--s-14)', color: 'var(--brand-soft-fg)' }}
+                onClick={onUseLocation}
+              >
+                Konuma göre bak
+              </button>
+            )}
             <button
               className="btn-ghost"
-              style={{ height: 56, marginTop: 'var(--s-14)' }}
+              style={{
+                height: 56,
+                marginTop: onUseLocation && (city || district) ? 0 : 'var(--s-14)',
+              }}
               onClick={onChangeDistrict}
             >
               İlçe değiştir{district ? ` · ${district.name}` : ''}

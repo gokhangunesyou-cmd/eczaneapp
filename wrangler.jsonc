@@ -18,7 +18,7 @@
     "not_found_handling": "single-page-application",
     // run_worker_first KULLANILMIYOR — kullanılsaydı her statik istek de
     // Worker'ı uyandırır ve günlük kotadan düşerdi.
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": ["/api/*", "/sitemap.xml", "/robots.txt"],
   },
 
   // ─── D1 ─────────────────────────────────────────────────────────────────

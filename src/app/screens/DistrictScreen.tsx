@@ -9,14 +9,22 @@ import { getDistricts, ApiClientError, type District } from '@app/lib/api';
  */
 export function DistrictScreen({
   city,
+  title,
   onPick,
+  onUseLocation,
   onRetryLocation,
   onChangeCity,
+  onBack,
+  backLabel,
 }: {
   city: { code: number; name: string };
+  title?: string;
   onPick: (code: string, name: string) => void;
-  onRetryLocation: () => void;
+  onUseLocation?: () => void;
+  onRetryLocation?: () => void;
   onChangeCity: () => void;
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const [items, setItems] = useState<District[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +61,7 @@ export function DistrictScreen({
             textWrap: 'pretty',
           }}
         >
-          Nerede olduğunu bulamadım, ilçeni seçer misin?
+          {title ?? 'Nerede olduğunu bulamadım, ilçeni seçer misin?'}
         </h1>
         <button
           onClick={onChangeCity}
@@ -79,6 +87,42 @@ export function DistrictScreen({
           flexDirection: 'column',
         }}
       >
+        <button
+          onClick={onUseLocation ?? onRetryLocation}
+          style={{
+            height: 56,
+            border: '1px solid var(--brand-soft-bg)',
+            borderRadius: 'var(--r-field)',
+            background: 'var(--brand-soft-bg)',
+            color: 'var(--brand-soft-fg)',
+            fontFamily: 'var(--font-display)',
+            fontSize: 16,
+            fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 'var(--s-8)',
+            marginBottom: 'var(--s-14)',
+            flex: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          Konuma göre (Yakınımdakiler)
+        </button>
+
         <input
           type="search"
           value={query}
@@ -117,6 +161,31 @@ export function DistrictScreen({
           )}
 
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {!query && items && items.length > 0 && (
+              <li>
+                <button
+                  onClick={() => onPick('', `Tüm ${city.name}`)}
+                  style={{
+                    width: '100%',
+                    minHeight: 60,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid var(--border-strong)',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 17,
+                    fontWeight: 800,
+                    color: 'var(--brand-soft-fg)',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span>Tüm {city.name} (İl Geneli)</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-3)' }}>
+                    Tüm nöbetçiler
+                  </span>
+                </button>
+              </li>
+            )}
             {filtered?.map((d) => (
               <li key={d.code}>
                 <button
@@ -156,23 +225,45 @@ export function DistrictScreen({
         style={{
           padding: 'var(--s-16) var(--s-22) var(--s-40)',
           background: 'linear-gradient(to top, var(--bg-alt) 62%, transparent)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--s-10)',
         }}
       >
-        <button
-          onClick={onRetryLocation}
-          style={{
-            width: '100%',
-            height: 60,
-            border: '1px solid var(--border-3)',
-            borderRadius: 'var(--r-btn-lg)',
-            color: 'var(--brand-soft-fg)',
-            fontFamily: 'var(--font-display)',
-            fontSize: 16,
-            fontWeight: 800,
-          }}
-        >
-          Konum iznini tekrar dene
-        </button>
+        {onRetryLocation && (
+          <button
+            onClick={onRetryLocation}
+            style={{
+              width: '100%',
+              height: 52,
+              border: '1px solid var(--border-3)',
+              borderRadius: 'var(--r-btn)',
+              color: 'var(--text-3)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 15,
+              fontWeight: 600,
+            }}
+          >
+            Konum iznini tekrar dene
+          </button>
+        )}
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              width: '100%',
+              height: 56,
+              border: '1px solid var(--border-3)',
+              borderRadius: 'var(--r-btn-lg)',
+              color: 'var(--brand-soft-fg)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 16,
+              fontWeight: 800,
+            }}
+          >
+            {backLabel ?? 'Vazgeç'}
+          </button>
+        )}
       </div>
     </div>
   );

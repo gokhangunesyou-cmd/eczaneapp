@@ -26,6 +26,8 @@
     "eslint.config.js",
     "tests/e2e",
     // Çekim komutu Node'da koşuyor; ayrıştırıcısının tip bildirimi de buraya ait.
-    "scripts/lib/eczaneler-parse.d.mts"
+    "scripts/lib/eczaneler-parse.d.mts",
+    "src/shared/**/*",
+    "src/mcp/**/*"
   ]
 }

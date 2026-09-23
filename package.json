@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "start": "tsx src/node/server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "gen:types": "openapi-typescript contracts/openapi.yaml -o src/shared/api-types.d.ts",
@@ -28,15 +29,19 @@
     "hash-password": "node scripts/hash-password.mjs",
     "deploy": "vite build && wrangler deploy",
     "scrape": "node scripts/scrape-eczaneler.mjs",
-    "scrape:edevlet": "node scripts/scrape-edevlet.mjs"
+    "scrape:edevlet": "node scripts/scrape-edevlet.mjs",
+    "mcp": "tsx src/mcp/index.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.1",
     "@hono/zod-validator": "^0.9.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "hono": "^4.13.1",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.3.0",
+    "tsx": "^4.23.11",
     "zod": "^4.4.3"
   },
   "devDependencies": {

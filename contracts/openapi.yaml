@@ -929,6 +929,8 @@ components:
         name: { type: string, example: "Antalya" }
         slug: { type: string, example: "antalya" }
         districtCount: { type: integer }
+        lat: { type: [number, "null"], format: double, example: 36.89 }
+        lng: { type: [number, "null"], format: double, example: 30.71 }
 
     ImportItem:
       type: object

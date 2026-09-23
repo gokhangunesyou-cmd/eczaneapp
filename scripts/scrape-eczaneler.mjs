@@ -117,7 +117,8 @@ let requestCount = 0;
 /** Kaynak zorlanıyor: TÜM koşu durur. Diğer hatalar il bazında yutulur. */
 class SourceBackoff extends Error {}
 
-const SCRAPER_KEY = flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? 'fa9fdd79addee111a7a7da600e573066';
+const SCRAPER_KEY =
+  flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? 'fa9fdd79addee111a7a7da600e573066';
 
 async function fetchCity(cityCode) {
   if (requestCount > 0) await sleep(DELAY);

@@ -20,19 +20,28 @@ export type City = components['schemas']['City'];
 export async function listCities(db: D1Database): Promise<City[]> {
   const { results } = await db
     .prepare(
-      `SELECT c.code, c.name, c.slug, COUNT(d.code) AS district_count
+      `SELECT c.code, c.name, c.slug, c.lat, c.lng, COUNT(d.code) AS district_count
        FROM city c
        LEFT JOIN district d ON d.city_code = c.code
-       GROUP BY c.code, c.name, c.slug
+       GROUP BY c.code, c.name, c.slug, c.lat, c.lng
        ORDER BY c.code
        LIMIT 100`,
     )
-    .all<{ code: number; name: string; slug: string; district_count: number }>();
+    .all<{
+      code: number;
+      name: string;
+      slug: string;
+      lat: number | null;
+      lng: number | null;
+      district_count: number;
+    }>();
 
   return results.map((r) => ({
     code: r.code,
     name: r.name,
     slug: r.slug,
+    lat: r.lat ?? null,
+    lng: r.lng ?? null,
     districtCount: r.district_count,
   }));
 }

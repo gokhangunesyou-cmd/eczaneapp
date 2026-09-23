@@ -28,6 +28,7 @@ const DEFAULT_ZOOM = Number(import.meta.env.VITE_MAP_DEFAULT_ZOOM ?? '12');
 type Props = {
   items: Pharmacy[];
   user?: { lat: number; lng: number };
+  city?: { lat?: number | null | undefined; lng?: number | null | undefined };
   selectedId?: string;
   onSelect: (p: Pharmacy) => void;
 };
@@ -78,7 +79,7 @@ function pinElement(p: Pharmacy, selected: boolean): HTMLElement {
   return wrap;
 }
 
-export default function MapView({ items, user, selectedId, onSelect }: Props) {
+export default function MapView({ items, user, city, selectedId, onSelect }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MlMap | null>(null);
   const markers = useRef<MlMarker[]>([]);
@@ -88,12 +89,19 @@ export default function MapView({ items, user, selectedId, onSelect }: Props) {
   useEffect(() => {
     if (!container.current || map.current || !STYLE_URL) return;
 
+    const initialCenter: [number, number] =
+      user?.lng && user?.lat
+        ? [user.lng, user.lat]
+        : city?.lng && city?.lat
+          ? [city.lng, city.lat]
+          : [DEFAULT_LNG, DEFAULT_LAT];
+
     const m = new maplibregl.Map({
       container: container.current,
       style: STYLE_URL,
-      center: [user?.lng ?? DEFAULT_LNG, user?.lat ?? DEFAULT_LAT],
+      center: initialCenter,
       zoom: DEFAULT_ZOOM,
-      attributionControl: { compact: true },
+      attributionControl: false,
     });
     // Sheet ekranın altını kapladığı için harita merkezini yukarı kaydır.
     // `padding` MapOptions'ta değil; harita hazır olunca uygulanır.
@@ -175,13 +183,15 @@ export default function MapView({ items, user, selectedId, onSelect }: Props) {
         maxZoom: 15,
         duration: 600,
       });
+    } else if (city?.lat && city?.lng) {
+      m.flyTo({ center: [city.lng, city.lat], zoom: 11, duration: 600 });
     }
 
     return () => {
       for (const mk of markers.current) mk.remove();
       markers.current = [];
     };
-  }, [items, selectedId, onSelect]);
+  }, [items, selectedId, onSelect, city]);
 
   // Anahtar yoksa harita yerine tasarımdaki doku kalır; liste çalışmaya devam eder.
   if (!STYLE_URL) return null;

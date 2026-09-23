@@ -2,6 +2,7 @@ import type { Pharmacy } from '@app/lib/api';
 import { formatDistance } from '@shared/geo';
 import { formatTrTime } from '@shared/duty';
 import { openDirections, callPhone, copyText } from '@app/lib/directions';
+import { slugify } from '@shared/slug';
 import { useState } from 'react';
 
 /**
@@ -11,16 +12,61 @@ import { useState } from 'react';
  * butonlar). Çevrimdışında birincil aksiyon "Ara" olur — bayat veriyle
  * navigasyona göndermek yanlış olur.
  */
-export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: boolean | undefined }) {
+export function PharmacyCard({
+  item,
+  offline,
+  onOpenProfile,
+  citySlug,
+}: {
+  item: Pharmacy;
+  offline?: boolean | undefined;
+  onOpenProfile?: ((pharmacy: Pharmacy) => void) | undefined;
+  citySlug?: string | undefined;
+}) {
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const warn = item.status === 'closing_soon';
-  // Koordinat yoksa yol tarifi verilemez — düğme kapatılır, kullanıcı
-  // "tıkladım bir şey olmadı" durumuna düşmez.
   const hasCoords = item.lat !== null && item.lng !== null;
 
   const accent = warn ? 'var(--warn)' : 'var(--brand)';
   const accentOn = warn ? 'var(--warn-on)' : 'var(--brand-on)';
   const accentFg = warn ? 'var(--warn-fg)' : 'var(--brand)';
+
+  const handleDirectionsClick = () => {
+    if (!hasCoords) return;
+    openDirections(item.lat!, item.lng!, item.name);
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const cSlug = citySlug || 'antalya';
+    const dSlug = slugify(item.districtName);
+    const pKey = slugify(item.name).replace(/-eczane(si)?$/, '');
+    const path = `/${cSlug}-${dSlug}-${pKey}-eczanesi`;
+    const shareUrl = `${window.location.origin}${path}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: `${item.name} Nöbetçi Eczanesi`,
+        text: `${item.name} Nöbetçi Eczanesi - ${item.address} (${item.districtName})`,
+        url: shareUrl,
+      }).catch(() => {
+        void copyText(shareUrl).then((ok) => {
+          if (ok) {
+            setShareCopied(true);
+            setTimeout(() => setShareCopied(false), 2000);
+          }
+        });
+      });
+    } else {
+      void copyText(shareUrl).then((ok) => {
+        if (ok) {
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 2000);
+        }
+      });
+    }
+  };
 
   return (
     <article
@@ -34,9 +80,10 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
         gap: 'var(--s-12)',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--s-12)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-6)', minWidth: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--s-12)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-6)', minWidth: 0, flex: 1 }}>
           <h2
+            onClick={() => onOpenProfile?.(item)}
             style={{
               margin: 0,
               fontFamily: 'var(--font-display)',
@@ -44,6 +91,7 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
               fontWeight: 800,
               letterSpacing: '-0.025em',
               lineHeight: 1.15,
+              cursor: onOpenProfile ? 'pointer' : 'default',
             }}
           >
             {item.name}
@@ -68,34 +116,52 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
           </address>
         </div>
 
-        {!offline && hasCoords && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <button
-            aria-label={`${item.name} için yol tarifi`}
-            onClick={() => openDirections(item.lat!, item.lng!, item.name)}
+            type="button"
+            onClick={handleShareClick}
+            title={shareCopied ? 'Bağlantı kopyalandı' : 'Eczaneyi paylaş'}
+            aria-label="Eczaneyi paylaş"
             style={{
-              width: 44,
-              height: 44,
-              flex: 'none',
+              background: shareCopied ? 'var(--brand-soft-bg)' : 'var(--surface-3)',
+              border: '1px solid var(--border-2)',
               borderRadius: 'var(--r-icon)',
-              border: `1px solid ${warn ? 'var(--warn-border)' : 'var(--border-3)'}`,
-              color: warn ? 'var(--warn-icon)' : 'var(--text-3)',
-              display: 'grid',
-              placeItems: 'center',
+              padding: '8px 12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              color: shareCopied ? 'var(--brand-soft-fg)' : 'var(--text-1)',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
             }}
           >
-            <span
-              aria-hidden
-              style={{
-                width: 14,
-                height: 14,
-                borderTop: '2px solid currentColor',
-                borderRight: '2px solid currentColor',
-                transform: 'rotate(-45deg)',
-                marginBottom: 3,
-              }}
-            />
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {shareCopied ? (
+                <path d="M20 6L9 17l-5-5" />
+              ) : (
+                <>
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </>
+              )}
+            </svg>
+            <span>{shareCopied ? 'Kopyalandı' : 'Paylaş'}</span>
           </button>
-        )}
+        </div>
       </div>
 
       <StatusBadge item={item} offline={offline} />
@@ -109,13 +175,14 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
               onClick={() => item.phone && callPhone(item.phone)}
               style={{
                 flex: 1.25,
-                height: 58,
+                height: 54,
                 borderRadius: 'var(--r-btn)',
                 background: 'var(--brand)',
                 color: 'var(--brand-on)',
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 800,
+                border: 'none',
                 opacity: item.phone ? 1 : 0.5,
               }}
             >
@@ -127,16 +194,18 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
               }}
               style={{
                 flex: 1,
-                height: 58,
+                height: 54,
                 borderRadius: 'var(--r-btn)',
                 border: '1px solid var(--border-3)',
+                background: 'transparent',
                 color: 'var(--text-3)',
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
-                fontWeight: 800,
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
               }}
             >
-              {copied ? 'Kopyalandı' : 'Adresi kopyala'}
+              {copied ? 'Kopyalandı' : 'Adresi Kopyala'}
             </button>
           </>
         ) : (
@@ -144,17 +213,19 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
             <button
               disabled={!hasCoords}
               title={hasCoords ? undefined : 'Bu eczanenin konumu henüz kayıtlı değil'}
-              onClick={() => hasCoords && openDirections(item.lat!, item.lng!, item.name)}
+              onClick={handleDirectionsClick}
               style={{
                 flex: 1.25,
                 opacity: hasCoords ? 1 : 0.5,
-                height: 58,
+                height: 54,
                 borderRadius: 'var(--r-btn)',
                 background: accent,
                 color: accentOn,
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 800,
+                border: 'none',
+                cursor: hasCoords ? 'pointer' : 'not-allowed',
               }}
             >
               Yol Tarifi
@@ -164,14 +235,16 @@ export function PharmacyCard({ item, offline }: { item: Pharmacy; offline?: bool
               onClick={() => item.phone && callPhone(item.phone)}
               style={{
                 flex: 1,
-                height: 58,
+                height: 54,
                 borderRadius: 'var(--r-btn)',
                 border: `1px solid ${accent}`,
+                background: 'transparent',
                 color: accentFg,
                 fontFamily: 'var(--font-display)',
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 800,
                 opacity: item.phone ? 1 : 0.5,
+                cursor: item.phone ? 'pointer' : 'not-allowed',
               }}
             >
               Ara

@@ -13,7 +13,10 @@ import { z } from 'zod';
 const LAT = z.number().min(35.8).max(42.2);
 const LNG = z.number().min(25.6).max(44.9);
 
-const DISTRICT_CODE = z.string().trim().regex(/^[a-zA-Z0-9_-]{1,40}$/, 'İlçe kodu 1-40 karakter olmalı.');
+const DISTRICT_CODE = z
+  .string()
+  .trim()
+  .regex(/^[a-zA-Z0-9_-]{1,40}$/, 'İlçe kodu 1-40 karakter olmalı.');
 const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Tarih YYYY-AA-GG biçiminde olmalı.');
 
 export const cityQuery = z.coerce.number().int().min(1).max(81).default(7);

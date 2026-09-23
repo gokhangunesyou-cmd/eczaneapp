@@ -531,6 +531,16 @@ export interface components {
             /** @example antalya */
             slug: string;
             districtCount: number;
+            /**
+             * Format: double
+             * @example 36.89
+             */
+            lat?: number | null;
+            /**
+             * Format: double
+             * @example 30.71
+             */
+            lng?: number | null;
         };
         ImportItem: {
             /** @example antalya/akseki/murtici */
