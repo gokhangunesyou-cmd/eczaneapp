@@ -318,6 +318,17 @@ export function ResultsScreen({
             Şu an açık nöbetçi eczane görünmüyor. Yola çıkmadan telefonla teyit et.
           </p>
         )}
+
+        {data && data.items.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-3)' }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '0 0 6px 0' }}>
+              Nöbetçi eczane bulunamadı
+            </p>
+            <p style={{ fontSize: 13, margin: 0, lineHeight: 1.45 }}>
+              Bu bölge için nöbetçi eczane kaydı henüz güncellenmedi veya bulunamadı.
+            </p>
+          </div>
+        )}
       </BottomSheet>
     </div>
   );

@@ -665,6 +665,38 @@ function PublicApp({
                   />
                 </div>
               )}
+
+              {!loadingPharmacies && activePharmacies.length === 0 && (
+                <div
+                  style={{
+                    padding: '24px 20px',
+                    borderRadius: 'var(--r-card, 16px)',
+                    background: 'var(--bg-card, rgba(255,255,255,0.03))',
+                    border: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    gap: 8,
+                    color: 'var(--text-2)',
+                  }}
+                >
+                  <span style={{ fontSize: 28 }} role="img" aria-label="Eczane">
+                    🏥
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
+                    {district
+                      ? `${city?.name} ${district.name} için nöbetçi eczane bulunamadı`
+                      : `${city?.name ?? 'Bu il'} için nöbetçi eczane kaydı henüz güncellenmedi`}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--text-3)', maxWidth: 440, lineHeight: 1.5 }}>
+                    {district
+                      ? 'Bu ilçede bugün nöbetçi eczane kaydı bulunamadı. Lütfen komşu ilçeleri veya il genelindeki nöbetçileri kontrol ediniz.'
+                      : 'Bu il için güncel nöbetçi eczane listesi güncelleniyor olabilir. Aşağıdaki ilçe listesinden aradığınız ilçeyi seçebilirsiniz.'}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

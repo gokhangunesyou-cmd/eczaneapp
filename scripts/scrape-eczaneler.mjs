@@ -87,7 +87,8 @@ if (positional.length < 1 || flags.help) {
       `  --api <url>      API adresi (varsayılan http://localhost:5173)\n` +
       `  --user <ad>      panel kullanıcı adı (varsayılan ADMIN_USERNAME)\n` +
       `  --pass <parola>  panel parolası (varsayılan ADMIN_PASSWORD)\n` +
-      `  --delay <ms>     istekler arası bekleme (varsayılan 800)\n\n`,
+      `  --delay <ms>     istekler arası bekleme (varsayılan 800)\n` +
+      `  --allow-partial  kısmi başarıda (bazı satır atlandıysa) çıkış kodunu 0 yap\n\n`,
   );
   process.exit(positional.length < 1 ? 1 : 0);
 }
@@ -438,7 +439,13 @@ try {
   }
 
   // Buradan sonrası gerçekten kısmi: bir şeyler yazıldı ama eksik kaldı.
-  if (failures.length > 0 || skippedRows.length > 0) process.exit(2);
+  if (failures.length > 0 || skippedRows.length > 0) {
+    if (flags['allow-partial']) {
+      console.log('Kısmi çekim tamamlandı (allow-partial devrede, çıkış kodu 0).');
+      process.exit(0);
+    }
+    process.exit(2);
+  }
 } catch (e) {
   process.stderr.write(`\nHATA: ${e.message}\n\n`);
   process.exit(1);

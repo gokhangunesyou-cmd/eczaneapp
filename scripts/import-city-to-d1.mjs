@@ -26,24 +26,29 @@ async function fetchCity(code) {
   return res.text();
 }
 
-async function run() {
-  const now = new Date();
-  const dutyDate = dutyDateOf(now);
-  const cityCode = Number(ilArg);
-  const foundCity = CITIES_81.find((c) => c.code === cityCode);
-  const city = { code: cityCode, name: foundCity ? foundCity.name : 'İl' };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  console.log(`İl ${city.name} (${cityCode}) için nöbetçiler çekiliyor (Tarih: ${dutyDate})...`);
-  const html = await fetchCity(cityCode);
-  const rows = parseCity(html, city.name);
-  console.log(`${rows.length} eczane ayrıştırıldı.`);
+async function executeSql(sqlLines, label) {
+  if (sqlLines.length <= 1) return;
+  const tmpFile = join(tmpdir(), `d1-import-${Date.now()}-${Math.random().toString(36).slice(2)}.sql`);
+  writeFileSync(tmpFile, sqlLines.join('\n'), 'utf8');
 
-  const { items } = toImportItems(rows, city, dutyDate);
-  console.log(`${items.length} nöbetçi kaydı hazırlandı.`);
+  console.log(`D1'e aktarılıyor (${label} - ${sqlLines.length} sorgu)...`);
+  try {
+    execSync(`npx wrangler d1 execute nobetci-eczane --remote --yes --file="${tmpFile}"`, {
+      stdio: 'inherit',
+      env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH}` },
+    });
+    console.log(`✓ ${label} başarıyla D1'e aktarıldı!`);
+  } finally {
+    try {
+      unlinkSync(tmpFile);
+    } catch {}
+  }
+}
 
-  // SQL oluştur
+function generateCitySql(items, cityCode, dutyDate) {
   const sqlLines = [];
-  sqlLines.push('PRAGMA foreign_keys = OFF;');
 
   // İlçeleri ekle
   for (const item of items) {
@@ -91,21 +96,53 @@ async function run() {
     );
   }
 
-  const tmpFile = join(tmpdir(), `d1-import-${cityCode}-${Date.now()}.sql`);
-  writeFileSync(tmpFile, sqlLines.join('\n'), 'utf8');
+  return sqlLines;
+}
 
-  console.log(`D1'e aktarılıyor (${sqlLines.length} sorgu)...`);
-  try {
-    execSync(`npx wrangler d1 execute nobetci-eczane --remote --yes --file="${tmpFile}"`, {
-      stdio: 'inherit',
-      env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH}` },
-    });
-    console.log(`✓ İl ${cityCode} başarıyla D1'e aktarıldı!`);
-  } finally {
-    try {
-      unlinkSync(tmpFile);
-    } catch {}
+async function run() {
+  const now = new Date();
+  const dutyDate = dutyDateOf(now);
+
+  const isAll = ['tum', 'all', 'tumu', 'turkiye'].includes(ilArg.toLowerCase());
+  const targetCities = isAll ? CITIES_81 : CITIES_81.filter((c) => c.code === Number(ilArg));
+
+  if (targetCities.length === 0) {
+    console.error(`İl bulunamadı: ${ilArg}`);
+    process.exit(1);
   }
+
+  console.log(`Toplam ${targetCities.length} il işlenecek (Tarih: ${dutyDate})...`);
+
+  let currentBatchSql = ['PRAGMA foreign_keys = OFF;'];
+  let batchCities = [];
+
+  for (let i = 0; i < targetCities.length; i++) {
+    const city = targetCities[i];
+    if (i > 0) await sleep(800);
+
+    try {
+      console.log(`[${i + 1}/${targetCities.length}] ${city.name} (${city.code}) çekiliyor...`);
+      const html = await fetchCity(city.code);
+      const rows = parseCity(html, city.name);
+      const { items } = toImportItems(rows, city, dutyDate);
+      console.log(`  -> ${rows.length} eczane ayrıştırıldı, ${items.length} nöbetçi hazırlandı.`);
+
+      const citySql = generateCitySql(items, city.code, dutyDate);
+      currentBatchSql.push(...citySql);
+      batchCities.push(city.name);
+
+      // Her 10 ilde bir veya en son ilde D1'e yaz
+      if (batchCities.length >= 10 || i === targetCities.length - 1) {
+        await executeSql(currentBatchSql, batchCities.join(', '));
+        currentBatchSql = ['PRAGMA foreign_keys = OFF;'];
+        batchCities = [];
+      }
+    } catch (e) {
+      console.error(`  ! ${city.name} (${city.code}) için hata:`, e.message);
+    }
+  }
+
+  console.log('Tamamlandı!');
 }
 
 run().catch((e) => {
