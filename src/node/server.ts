@@ -18,7 +18,13 @@ console.log(`[Server] Veritabanı konumu: ${dbPath}`);
 // SQLite veritabanını ve otomatik migration'ları hazırla
 const db = createSqliteDb(dbPath, migrationsDir);
 
+let isScrapingInProgress = false;
+
 function triggerLocalScrape(scope: string, days: string) {
+  if (isScrapingInProgress) {
+    console.log(`[Scraper] Zaten aktif bir çekim işlemi çalışıyor, yeni istek atlandı.`);
+    return;
+  }
   const scriptPath = path.resolve(process.cwd(), 'scripts/scrape-eczaneler.mjs');
   if (!fs.existsSync(scriptPath)) {
     console.error(`[Scraper] Betik bulunamadı: ${scriptPath}`);
@@ -28,16 +34,63 @@ function triggerLocalScrape(scope: string, days: string) {
   const args = [scriptPath, scope, days, '--api', apiUrl];
   console.log(`[Scraper] Arka planda yerel çekim başlatılıyor: node ${args.join(' ')}`);
 
+  isScrapingInProgress = true;
   const child = spawn(process.execPath, args, {
     env: {
       ...process.env,
       ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
       ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
     },
-    detached: true,
     stdio: 'inherit',
   });
-  child.unref();
+
+  child.on('exit', (code) => {
+    isScrapingInProgress = false;
+    console.log(`[Scraper] Çekim işlemi tamamlandı (çıkış kodu: ${code}).`);
+  });
+
+  child.on('error', (err) => {
+    isScrapingInProgress = false;
+    console.error(`[Scraper] Çekim alt işlemi hatası:`, err);
+  });
+}
+
+function startHourlyScheduler() {
+  const isEnabled = process.env.AUTO_SCRAPE_HOURLY !== 'false';
+  if (!isEnabled) {
+    console.log('[Scheduler] Saatlik otomatik çekim devre dışı (AUTO_SCRAPE_HOURLY=false).');
+    return;
+  }
+
+  // Varsayılan: her saatin 5. dakikası (08:05, 09:05 vb. - rotasyondan 5 dk sonra)
+  const targetMinute = Number(process.env.AUTO_SCRAPE_MINUTE || 5);
+
+  function scheduleNext() {
+    const now = new Date();
+    const next = new Date(now);
+    if (now.getMinutes() >= targetMinute) {
+      next.setHours(now.getHours() + 1);
+    }
+    next.setMinutes(targetMinute, 0, 0);
+
+    const delayMs = next.getTime() - now.getTime();
+    const minutesLeft = Math.round(delayMs / 60000);
+    console.log(`[Scheduler] Bir sonraki saatlik çekim: ${next.toLocaleTimeString('tr-TR')} (~${minutesLeft} dakika sonra)`);
+
+    setTimeout(() => {
+      console.log(`[Scheduler] Saatlik otomatik çekim tetikleniyor (${new Date().toLocaleTimeString('tr-TR')})...`);
+      triggerLocalScrape('tum', 'bugun');
+      scheduleNext();
+    }, delayMs);
+  }
+
+  console.log(`[Scheduler] Saatlik otomatik çekim zamanlayıcısı devrede (her saat ${targetMinute}. dakikada çalışacak).`);
+  scheduleNext();
+
+  if (process.env.AUTO_SCRAPE_ON_STARTUP === 'true') {
+    console.log('[Scheduler] Sunucu başlangıcında ilk çekim tetikleniyor (AUTO_SCRAPE_ON_STARTUP=true)...');
+    setTimeout(() => triggerLocalScrape('tum', 'bugun'), 5000);
+  }
 }
 
 async function getAdminPasswordHash(): Promise<string> {
@@ -124,3 +177,6 @@ serve({
 });
 
 console.log(`[Server] Sunucu http://0.0.0.0:${port} üzerinde dinlemede.`);
+
+// Saatlik otomatik nöbetçi eczane çekim zamanlayıcısını başlat
+startHourlyScheduler();

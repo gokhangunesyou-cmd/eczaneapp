@@ -273,7 +273,7 @@ function PublicApp({
   useEffect(() => {
     if (isGps && pathname === '/' && pharmaciesData?.cityCode && cities.length > 0) {
       const detected = cities.find((c) => c.code === pharmaciesData.cityCode);
-      if (detected && detected.code !== city?.code) {
+      if (detected) {
         setCity({
           code: detected.code,
           name: detected.name,
@@ -282,7 +282,7 @@ function PublicApp({
         });
       }
     }
-  }, [isGps, pathname, pharmaciesData?.cityCode, cities, city?.code]);
+  }, [isGps, pathname, pharmaciesData?.cityCode, cities]);
 
   useEffect(() => {
     let alive = true;
