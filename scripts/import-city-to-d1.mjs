@@ -6,7 +6,9 @@ import { join } from 'node:path';
 import { parseCity, toImportItems } from './lib/eczaneler-parse.mjs';
 import { dutyDateOf } from '../src/shared/duty.ts';
 
-const ilArg = process.argv[2] || '34';
+import { CITIES_81 } from '../src/shared/cities.ts';
+
+const ilArg = process.argv[2] || '1';
 const BASE = 'https://www.eczaneler.gen.tr';
 const PATH = '/iframe.php';
 const UA = 'nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com)';
@@ -28,7 +30,8 @@ async function run() {
   const now = new Date();
   const dutyDate = dutyDateOf(now);
   const cityCode = Number(ilArg);
-  const city = { code: cityCode, name: cityCode === 34 ? 'İstanbul' : cityCode === 35 ? 'İzmir' : cityCode === 6 ? 'Ankara' : cityCode === 7 ? 'Antalya' : 'İl' };
+  const foundCity = CITIES_81.find((c) => c.code === cityCode);
+  const city = { code: cityCode, name: foundCity ? foundCity.name : 'İl' };
 
   console.log(`İl ${city.name} (${cityCode}) için nöbetçiler çekiliyor (Tarih: ${dutyDate})...`);
   const html = await fetchCity(cityCode);
