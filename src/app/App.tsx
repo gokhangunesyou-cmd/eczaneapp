@@ -10,6 +10,7 @@ import {
   type PharmacyList,
 } from './lib/api';
 import { slugify } from '@shared/slug';
+import { findCityBySlugOrCode } from '@shared/cities';
 import { SeoHead } from './components/SeoHead';
 import { parseRouteSlugs } from './lib/routes';
 import { Navbar } from './components/Navbar';
@@ -78,6 +79,25 @@ function readStoredCity(): CityPick | null {
   return null;
 }
 
+function getInitialCity(currentPath: string): CityPick | null {
+  const parsed = parseRouteSlugs(currentPath);
+  if (parsed.citySlug) {
+    const found = findCityBySlugOrCode(parsed.citySlug);
+    if (found) {
+      return {
+        code: found.code,
+        name: found.name,
+        lat: found.lat,
+        lng: found.lng,
+      };
+    }
+  }
+  if (currentPath === '/') {
+    return readStoredCity();
+  }
+  return null;
+}
+
 function PublicApp({
   pathname,
   onNavigate,
@@ -87,7 +107,7 @@ function PublicApp({
 }) {
   const { state, request } = useGeolocation();
 
-  const [city, setCity] = useState<CityPick | null>(readStoredCity);
+  const [city, setCity] = useState<CityPick | null>(() => getInitialCity(pathname));
   const [district, setDistrict] = useState<DistrictPick | null>(null);
   const [pharmacyKey, setPharmacyKey] = useState<string | null>(null);
   const [browsing, setBrowsing] = useState<'none' | 'cities' | 'districts' | 'all-cities'>('none');
@@ -174,9 +194,9 @@ function PublicApp({
 
         if (!citySlug) return;
 
-        const matchedCity = cityList.find(
-          (c) => c.slug === citySlug || slugify(c.name) === citySlug,
-        );
+        const matchedCity =
+          cityList.find((c) => c.slug === citySlug || slugify(c.name) === citySlug) ??
+          findCityBySlugOrCode(citySlug);
 
         if (matchedCity && alive) {
           const nextCity = {
@@ -241,7 +261,7 @@ function PublicApp({
   // "Yükleniyor" ayrı bir state DEĞİL, türetilmiş bir değer: sonucu gelmiş
   // sorgunun kimliği güncel sorgununkinden farklıysa yükleniyoruzdur. Efekt
   // gövdesinde senkron setState yapmadan aynı sonucu verir.
-  const isGps = state.status === 'granted' && (pathname === '/' || !district);
+  const isGps = state.status === 'granted' && pathname === '/' && !city && !district;
   const dutyQueryKey = JSON.stringify([
     isGps ? [state.lat, state.lng] : null,
     city?.code ?? null,
@@ -249,9 +269,9 @@ function PublicApp({
   ]);
   const loadingPharmacies = settledDutyKey !== dutyQueryKey;
 
-  // GPS ile gelen yanıttan kullanıcının çözümlenen ilini eşle
+  // GPS ile gelen yanıttan kullanıcının çözümlenen ilini eşle (yalnızca ana sayfada)
   useEffect(() => {
-    if (isGps && pharmaciesData?.cityCode && cities.length > 0) {
+    if (isGps && pathname === '/' && pharmaciesData?.cityCode && cities.length > 0) {
       const detected = cities.find((c) => c.code === pharmaciesData.cityCode);
       if (detected && detected.code !== city?.code) {
         setCity({
@@ -262,7 +282,7 @@ function PublicApp({
         });
       }
     }
-  }, [isGps, pharmaciesData?.cityCode, cities, city?.code]);
+  }, [isGps, pathname, pharmaciesData?.cityCode, cities, city?.code]);
 
   useEffect(() => {
     let alive = true;
@@ -292,16 +312,13 @@ function PublicApp({
   }, [state, city, district, isGps, dutyQueryKey]);
 
   const handlePickCity = (code: number, name: string) => {
-    const matched = cities.find((c) => c.code === code);
+    const matched = cities.find((c) => c.code === code) ?? findCityBySlugOrCode(code);
     const next: CityPick = { code, name, lat: matched?.lat, lng: matched?.lng };
     setCity(next);
     setDistrict(null);
     setPharmacyKey(null);
-    setBrowsing('districts');
+    setBrowsing('none');
     localStorage.setItem(CITY_KEY, JSON.stringify(next));
-
-    // İl seçildi → adres il sayfasına döner ama ilçe seçimi açık kalmalı.
-    keepBrowsingRef.current = true;
 
     const cSlug = slugify(name);
     navigateTo(`/${cSlug}-nobetci-eczane`);
@@ -667,6 +684,7 @@ function PublicApp({
         <aside className="web-map-col">
           <MapPanel
             items={activePharmacies}
+            {...(city ? { city } : {})}
             {...(state.status === 'granted' && !city && !district
               ? { user: { lat: state.lat, lng: state.lng } }
               : {})}

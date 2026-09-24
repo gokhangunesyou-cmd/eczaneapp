@@ -70,4 +70,13 @@ describe('parseRouteSlugs', () => {
       pharmacyKey: null,
     });
   });
+
+  it('/izmir-nobetci-eczane rotasını mockCities boş olsa dahi CITIES_81 ile çözer', () => {
+    expect(parseRouteSlugs('/izmir-nobetci-eczane', [])).toEqual({
+      citySlug: 'izmir',
+      districtSlug: null,
+      pharmacyKey: null,
+    });
+  });
 });
+

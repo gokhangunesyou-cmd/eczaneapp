@@ -1,4 +1,5 @@
 import { slugify } from '@shared/slug';
+import { CITIES_81 } from '@shared/cities';
 import type { City } from './api';
 
 export type ParsedRoute = {
@@ -8,7 +9,7 @@ export type ParsedRoute = {
   pharmacyKey: string | null;
 };
 
-export function parseRouteSlugs(pathname: string, cityList: City[]): ParsedRoute {
+export function parseRouteSlugs(pathname: string, cityList: City[] = []): ParsedRoute {
   let clean = pathname.replace(/^\//, '').replace(/\/$/, '');
   if (!clean) return { citySlug: null, districtSlug: null, pharmacyKey: null };
 
@@ -32,12 +33,15 @@ export function parseRouteSlugs(pathname: string, cityList: City[]): ParsedRoute
     };
   }
 
-  const exactCity = cityList.find((c) => c.slug === clean || slugify(c.name) === clean);
+  const effectiveList: (City | { code: number; name: string; slug: string })[] =
+    cityList.length > 0 ? cityList : CITIES_81;
+
+  const exactCity = effectiveList.find((c) => c.slug === clean || slugify(c.name) === clean);
   if (exactCity) {
     return { citySlug: exactCity.slug, districtSlug: null, pharmacyKey: null };
   }
 
-  for (const c of cityList) {
+  for (const c of effectiveList) {
     const cSlug = c.slug || slugify(c.name);
     if (clean.startsWith(`${cSlug}-`)) {
       const remainder = clean.slice(cSlug.length + 1);

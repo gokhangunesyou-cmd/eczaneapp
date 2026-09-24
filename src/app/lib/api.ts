@@ -93,6 +93,7 @@ export const getCities = () => request<{ items: City[] }>('/api/cities');
 export function getOnDuty(params: {
   lat?: number;
   lng?: number;
+  city?: number;
   district?: string;
   includeExpired?: boolean;
   limit?: number;
@@ -102,6 +103,7 @@ export function getOnDuty(params: {
     q.set('lat', String(params.lat));
     q.set('lng', String(params.lng));
   }
+  if (params.city !== undefined) q.set('city', String(params.city));
   if (params.district) q.set('district', params.district);
   if (params.includeExpired) q.set('includeExpired', 'true');
   if (params.limit) q.set('limit', String(params.limit));

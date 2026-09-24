@@ -43,6 +43,10 @@
       "pattern": "nobetcieczane.becayisler.com",
       "custom_domain": true,
     },
+    {
+      "pattern": "nobetci-eczane.becayisler.com/*",
+      "zone_name": "becayisler.com",
+    },
   ],
 
   // ─── Cron Trigger'lar ───────────────────────────────────────────────────

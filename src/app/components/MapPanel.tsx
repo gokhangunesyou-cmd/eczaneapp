@@ -7,6 +7,7 @@ const MapView = lazy(() => import('@app/components/MapView'));
 type Props = {
   items: Pharmacy[];
   user?: { lat: number; lng: number };
+  city?: { lat?: number | null | undefined; lng?: number | null | undefined };
   selectedId?: string;
   onSelect: (p: Pharmacy) => void;
   onFocusUser?: () => void;
@@ -16,6 +17,7 @@ type Props = {
 export function MapPanel({
   items,
   user,
+  city,
   selectedId,
   onSelect,
   onFocusUser,
@@ -50,7 +52,7 @@ export function MapPanel({
         </div>
 
         <div className="map-toolbar-actions">
-          {user && onFocusUser && (
+          {onFocusUser && (
             <button
               onClick={onFocusUser}
               className="map-btn"
@@ -100,6 +102,7 @@ export function MapPanel({
           <MapView
             items={items}
             {...(user ? { user } : {})}
+            {...(city ? { city } : {})}
             {...(selectedId ? { selectedId } : {})}
             onSelect={onSelect}
           />
