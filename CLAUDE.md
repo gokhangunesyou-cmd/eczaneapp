@@ -4,50 +4,43 @@ Web + kurulabilir PWA. Tek hedef: sıfır tıkla en yakın nöbetçi eczaneyi g�
 
 ## Mimari
 
-Tek Cloudflare Worker; hem API'yi hem statik varlıkları servis eder.
-**Veri eczaneler.gen.tr'den çekilir (ADR-007), çekim Cloudflare'in DIŞINDA koşar
-(ADR-006):** GitHub Actions günde iki kez — 08:15 ve 14:00 TRT, ikisi de nöbetin
-döndüğü 08:00'den SONRA — `npm run scrape` çalıştırır, sonucu `/api/admin/import`
-ucuna yazar. Kaynak koordinatı listenin içinde veriyor: il başına tek istek.
-Kaynak **yalnızca bugünü** ve **nöbet saatlerini vermeden** sunuyor; saatler
-`src/shared/duty.ts`'teki rotasyon modelinden türetilir (ADR-007). e-Devlet
-komutu `npm run scrape:edevlet` olarak yedekte durur (ADR-005).
-Worker'ın tek dış isteği panelin tetikleme düğmesidir. Panel elle
-düzeltme yolu olarak durur — elle girilen koordinat ve nöbet çekimle ezilmez.
-D1 kayıt otoritesidir; okuma yolu D1 + edge cache. Panel: `/admin`.
-Harita MapLibre + MapTiler; yol tarifi native harita uygulamasına deep link.
-Kapsam 81 il. Kullanıcının ili **konumdan çözülür** (en yakın eczanenin ili;
-yedek yol il merkezleri) — reverse geocoding yok, MapTiler kotası harcanmaz.
-`SUPPORTED_CITY_CODE` artık kapı değil, yalnızca varsayılan il.
-Prod: nobetcieczane.becayisler.com
+Uygulama **Node.js (Hono) sunucusu (`src/node/server.ts`)** üzerinde çalışır ve dış dünyaya **Cloudflare Tunnel (`cloudflared`)** üzerinden güvenli bir şekilde bağlanır (ADR-008).
+
+- **Sunucu & API:** `@hono/node-server` ile yerel port 3000'de dinler (`npm start`). Hem API uçlarını (`/api/*`) hem de statik React/Vite arayüzünü (`dist/client`) servis eder.
+- **Veritabanı:** Yerel gömülü SQLite veritabanı (`data/nobetci.sqlite`) kullanılır. `src/node/sqlite-adapter.ts` üzerinden Cloudflare D1 arayüzü ile %100 uyumlu `DatabaseSync` adaptörü çalışır. Sunucu başlangıcında `migrations/*.sql` otomatik uygulanır.
+- **Veri Çekimi & Otomasyon:** Veri resmi `e-Devlet` (TİTCK) kaynağından doğrudan ve güvenli biçimde çekilir (ADR-005). `server.ts` içindeki dahili saatlik zamanlayıcı (`startHourlyScheduler`) her saat başından sonra `scripts/scrape-edevlet.mjs tum bugun` betiğini otomatik çalıştırır. Herhangi bir harici API anahtarına veya ScraperAPI proxy'sine ihtiyaç duymaz.
+- **Yayın & Ağ:** Cloudflare Tunnel ile internete açılmıştır. Canlı alan adı: **`https://nobetci-eczane.becayisler.com`**
+- **Yedek / Edge Modu:** Kod tabanı halen Cloudflare Workers (workerd) ve D1 (`wrangler dev`, `wrangler deploy`) ile tam uyumludur.
+- **Harita & Yol Tarifi:** MapLibre + MapTiler; yol tarifi native harita uygulamasına deep link.
+- **Kapsam:** 81 il. Kullanıcının ili **konumdan çözülür** (en yakın eczanenin ili; yedek yol il merkezleri).
+- **Canlı Domain:** `nobetci-eczane.becayisler.com`
 
 ## Dizin
 
     contracts/openapi.yaml     API sözleşmesi — tek doğru kaynak, tipler buradan üretilir
     design/                    onaylı tasarım (.html) + çıkarılmış DESIGN-TOKENS.md
-    docs/adr/                  mimari karar kayıtları (001–007; 006+007 mevcut veri akışı)
-    .github/workflows/         günlük çekim (scrape.yml) — ADR-006, kaynak ADR-007
-    src/worker/                Hono API, zod şemaları, D1 erişimi (repo/)
+    docs/adr/                  mimari karar kayıtları (001–008; 007 kaynak, 008 Node/Tunnel)
+    src/node/                  Node.js sunucusu (server.ts), SQLite adaptörü (sqlite-adapter.ts)
+    src/worker/                Hono API, zod şemaları, veritabanı repo katmanı (repo/)
     src/app/                   React arayüz — screens/, components/, admin/
     src/shared/                paylaşılan kod (geo, duty) + üretilen api-types
-    migrations/  seed/         D1 şeması · geliştirme için SAHTE veri
-    scripts/                   hook script'leri, parola hash, font ve ikon üretimi
-    tests/e2e/                 Playwright smoke (3 test, artırma)
+    data/                      SQLite veritabanı dizini (nobetci.sqlite)
+    migrations/  seed/         Veritabanı şeması ve test tohumları
+    scripts/                   Scraping betikleri, parola hash, font ve ikon üretimi
+    tests/e2e/                 Playwright smoke testleri
 
 ## Komutlar
 
-    npm run dev          Vite + Worker (gerçek workerd) tek komutta
-    npm run test         Vitest (workerd havuzu, gerçek D1)
+    npm run dev          Vite geliştirme sunucusu
+    npm start            Node.js prodüksiyon sunucusu (Hono + SQLite + Scheduler)
+    npm run build        Vite client derlemesi (dist/client)
+    npm run test         Vitest test havuzu
     npm run test:e2e     Playwright smoke
     npm run lint         tsc -b + eslint + prettier --check
     npm run gen:types    openapi.yaml → src/shared/api-types.d.ts
-    npm run cf-typegen   wrangler.jsonc → worker-configuration.d.ts
-    npm run db:reset     yerel D1'i sıfırla + migration + sahte veri
-    npm run scrape -- tum            günlük çekim (81 il, yalnızca bugün)
+    npm run scrape -- tum            günlük çekim (81 il, yerel API'ye yazar)
     npm run scrape -- 7 --dry-run --sample 3   yazmadan dene, ne bulduğunu gör
-    npm run scrape:edevlet -- 7 ikisi     yedek kaynak, nöbet saatlerini de verir
-    npm run check        lint + test + build + deploy --dry-run
-    npm run deploy       ← bunu KULLANICI çalıştırır
+    npm run mcp          MCP (Model Context Protocol) sunucusunu başlatır
 
 ## Kurallar
 

@@ -141,7 +141,7 @@ export const CITIES_MAP: Record<number, { name: string; slug: string }> = {
 };
 
 export function getBaseApiUrl(): string {
-  return process.env.NOBETCI_ECZANE_API_URL || 'https://nobetcieczane.becayisler.com';
+  return process.env.NOBETCI_ECZANE_API_URL || 'https://nobetci-eczane.becayisler.com';
 }
 
 /**

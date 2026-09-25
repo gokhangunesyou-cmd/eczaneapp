@@ -1,8 +1,8 @@
 # ADR-003 — Veri tazeleme stratejisi
 
-- **Durum:** Kabul edildi
-- **Tarih:** 2026-08-07
-- **Bağlam:** Cloudflare ücretsiz plan · veri kaynağı ADR-001'de Antalya Eczacı Odası olarak seçildi
+- **Durum:** Aşılmış / Güncellendi (Bkz. ADR-008: Node.js, SQLite ve Cloudflare Tunnel mimarisine geçildi)
+- **Tarih:** 2026-08-07 (Güncellendi: 2026-09-25)
+- **Bağlam:** İlk aşamada Cloudflare Workers + D1; ADR-008 ile Node.js + SQLite + Cloudflare Tunnel yapısına geçildi.
 
 ---
 

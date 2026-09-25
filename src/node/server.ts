@@ -25,7 +25,7 @@ function triggerLocalScrape(scope: string, days: string) {
     console.log(`[Scraper] Zaten aktif bir çekim işlemi çalışıyor, yeni istek atlandı.`);
     return;
   }
-  const scriptPath = path.resolve(process.cwd(), 'scripts/scrape-eczaneler.mjs');
+  const scriptPath = path.resolve(process.cwd(), 'scripts/scrape-edevlet.mjs');
   if (!fs.existsSync(scriptPath)) {
     console.error(`[Scraper] Betik bulunamadı: ${scriptPath}`);
     return;

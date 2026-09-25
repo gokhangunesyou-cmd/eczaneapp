@@ -108,7 +108,7 @@ export function ResultsScreen({
     ? data.items.filter((p) => p.id !== selected?.id && p.status !== 'closed')
     : [];
 
-  const BASE_URL = 'https://nobetcieczane.becayisler.com';
+  const BASE_URL = 'https://nobetci-eczane.becayisler.com';
   const cSlug = city ? slugify(city.name) : undefined;
   const dSlug = district ? slugify(district.name) : undefined;
 

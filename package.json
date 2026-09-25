@@ -28,7 +28,9 @@
     "check": "npm run lint && npm run test && npm run build && wrangler deploy --dry-run",
     "hash-password": "node scripts/hash-password.mjs",
     "deploy": "vite build && wrangler deploy",
-    "scrape": "node scripts/scrape-eczaneler.mjs",
+    "scrape": "node scripts/scrape-edevlet.mjs",
+    "scrape:eczaneler": "node scripts/scrape-eczaneler.mjs",
+    "scrape:v2": "node scripts/scrape-eczaneler-v2.mjs",
     "scrape:edevlet": "node scripts/scrape-edevlet.mjs",
     "mcp": "tsx src/mcp/index.ts"
   },
@@ -38,6 +40,7 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "hono": "^4.13.1",
     "maplibre-gl": "^5.24.0",
+    "playwright-core": "^1.63.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.3.0",

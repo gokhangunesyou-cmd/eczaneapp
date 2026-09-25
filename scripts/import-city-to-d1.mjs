@@ -11,7 +11,7 @@ import { CITIES_81 } from '../src/shared/cities.ts';
 const ilArg = process.argv[2] || '1';
 const BASE = 'https://www.eczaneler.gen.tr';
 const PATH = '/iframe.php';
-const UA = 'nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com)';
+const UA = 'nobetci-eczane/0.1 (+https://nobetci-eczane.becayisler.com)';
 
 async function fetchCity(code) {
   const url = `${BASE}${PATH}?lokasyon=${code}`;

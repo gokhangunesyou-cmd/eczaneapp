@@ -11,7 +11,7 @@
  *   npm run scrape -- antalya
  *   npm run scrape -- tum bugun                     günlük otomatik koşunun kendisi
  *   npm run scrape -- 7 --dry-run --sample 3        yazma, ne bulduğunu göster
- *   npm run scrape -- tum bugun --api https://nobetcieczane.becayisler.com
+ *   npm run scrape -- tum bugun --api https://nobetci-eczane.becayisler.com
  *
  * NEDEN e-DEVLET DEĞİL (ADR-007): e-Devlet koordinatı ayrı bir istekle, oturuma
  * bağlı `?harita=Goster&index=N` ucundan veriyordu — eczane başına bir istek.
@@ -45,7 +45,7 @@ const BASE = 'https://www.eczaneler.gen.tr';
 const PATH = '/iframe.php';
 
 const UA =
-  'nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
+  'nobetci-eczane/0.1 (+https://nobetci-eczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
 
 /** İçe aktarma şeması tek çağrıda 500 kayıtla sınırlı. */
 const IMPORT_CHUNK = 400;
@@ -118,31 +118,21 @@ let requestCount = 0;
 /** Kaynak zorlanıyor: TÜM koşu durur. Diğer hatalar il bazında yutulur. */
 class SourceBackoff extends Error {}
 
-const SCRAPER_KEY =
-  flags['scraperapi-key'] ?? process.env.SCRAPERAPI_KEY ?? '';
-
 async function fetchCity(cityCode) {
   if (requestCount > 0) await sleep(DELAY);
   requestCount++;
 
-  const rawUrl = `${BASE}${PATH}?lokasyon=${cityCode}`;
-  const targetUrl = SCRAPER_KEY
-    ? `https://api.scraperapi.com?api_key=${encodeURIComponent(SCRAPER_KEY)}&url=${encodeURIComponent(rawUrl)}`
-    : rawUrl;
+  const url = `${BASE}${PATH}?lokasyon=${cityCode}`;
 
   let res;
   try {
-    res = await fetch(targetUrl, {
+    res = await fetch(url, {
       redirect: 'follow',
-      ...(SCRAPER_KEY
-        ? {}
-        : {
-            headers: {
-              'User-Agent': UA,
-              'Accept-Language': 'tr-TR,tr;q=0.9',
-              Accept: 'text/html,application/xhtml+xml',
-            },
-          }),
+      headers: {
+        'User-Agent': UA,
+        'Accept-Language': 'tr-TR,tr;q=0.9',
+        Accept: 'text/html,application/xhtml+xml',
+      },
     });
   } catch (e) {
     const cause = e.cause ? ` [cause: ${e.cause.message ?? e.cause.code ?? e.cause}]` : '';

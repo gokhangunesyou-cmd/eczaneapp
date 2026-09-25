@@ -9,7 +9,7 @@ seoRoutes.get('/robots.txt', (c) => {
 Allow: /
 Disallow: /admin
 
-Sitemap: https://nobetcieczane.becayisler.com/sitemap.xml
+Sitemap: https://nobetci-eczane.becayisler.com/sitemap.xml
 `;
   return c.text(content, 200, {
     'Content-Type': 'text/plain; charset=utf-8',
@@ -19,7 +19,7 @@ Sitemap: https://nobetcieczane.becayisler.com/sitemap.xml
 
 seoRoutes.get('/sitemap.xml', async (c) => {
   const db = c.env.DB;
-  const baseUrl = 'https://nobetcieczane.becayisler.com';
+  const baseUrl = 'https://nobetci-eczane.becayisler.com';
 
   const [citiesResult, districtsResult, pharmaciesResult] = await Promise.all([
     db

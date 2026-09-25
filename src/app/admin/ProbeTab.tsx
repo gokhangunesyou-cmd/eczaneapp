@@ -20,17 +20,13 @@ import { inputStyle } from './styles';
 
 /** Hazır denemeler — asıl soruyu tek tıkla sormak için. */
 const PRESETS: { label: string; url: string }[] = [
-  { label: 'eczaneler.gen.tr', url: 'https://www.eczaneler.gen.tr/iframe.php?lokasyon=7' },
-  {
-    label: 'eczaneler.gen.tr (ScraperAPI)',
-    url: 'https://api.scraperapi.com?api_key=fa9fdd79addee111a7a7da600e573066&url=https://www.eczaneler.gen.tr/iframe.php?lokasyon=7',
-  },
   { label: 'e-Devlet', url: 'https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama' },
+  { label: 'eczaneler.gen.tr', url: 'https://www.eczaneler.gen.tr/iframe.php?lokasyon=7' },
 ];
 
 /** Çekimin kaynağa gönderdiği User-Agent — tanı da aynı kimlikle gitsin. */
 const SCRAPER_UA =
-  'nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
+  'nobetci-eczane/0.1 (+https://nobetci-eczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
 
 export function ProbeTab() {
   const [url, setUrl] = useState(PRESETS[0]!.url);

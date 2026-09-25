@@ -58,7 +58,7 @@ type CityPick = {
 type DistrictPick = { code: string; name: string };
 
 const CITY_KEY = 'city';
-const BASE_URL = 'https://nobetcieczane.becayisler.com';
+const BASE_URL = 'https://nobetci-eczane.becayisler.com';
 
 function readStoredCity(): CityPick | null {
   try {

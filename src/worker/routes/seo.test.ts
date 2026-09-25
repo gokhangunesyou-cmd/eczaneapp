@@ -11,7 +11,7 @@ describe('SEO endpoints', () => {
     expect(text).toContain('User-agent: *');
     expect(text).toContain('Allow: /');
     expect(text).toContain('Disallow: /admin');
-    expect(text).toContain('Sitemap: https://nobetcieczane.becayisler.com/sitemap.xml');
+    expect(text).toContain('Sitemap: https://nobetci-eczane.becayisler.com/sitemap.xml');
   });
 
   it('GET /sitemap.xml dinamik XML sitemap içerir', async () => {
@@ -22,6 +22,6 @@ describe('SEO endpoints', () => {
     const xml = await res.text();
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(xml).toContain('https://nobetcieczane.becayisler.com/');
+    expect(xml).toContain('https://nobetci-eczane.becayisler.com/');
   });
 });

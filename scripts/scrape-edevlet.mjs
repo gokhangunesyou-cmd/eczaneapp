@@ -11,7 +11,7 @@
  *   npm run scrape -- antalya bugun
  *   npm run scrape -- tum ikisi                     günlük otomatik koşunun kendisi
  *   npm run scrape -- 7 yarin --dry-run             yazma, sadece göster
- *   npm run scrape -- tum ikisi --api https://nobetcieczane.becayisler.com
+ *   npm run scrape -- tum ikisi --api https://nobetci-eczane.becayisler.com
  *
  * Veriyi kendi admin API'mizin /api/admin/import ucuna yazar — böylece aynı
  * doğrulama, çakışma ve denetim yolu kullanılır ve komut hem yerelde hem
@@ -36,7 +36,7 @@ const BASE = 'https://www.turkiye.gov.tr';
 const PATH = '/saglik-titck-nobetci-eczane-sorgulama';
 
 const UA =
-  'nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
+  'nobetci-eczane/0.1 (+https://nobetci-eczane.becayisler.com; nobetci eczane bilgilendirme servisi)';
 
 // ─── Argümanlar ─────────────────────────────────────────────────────────────
 
@@ -55,24 +55,24 @@ function parseArgs(argv) {
 
 const { positional, flags } = parseArgs(process.argv.slice(2));
 
-if (positional.length < 2 || flags.help) {
+if (positional.length < 1 || flags.help) {
   process.stderr.write(
-    `\nKullanım: npm run scrape -- <il> <gun>\n\n` +
+    `\nKullanım: npm run scrape -- <il> [gun]\n\n` +
       `  il    plaka kodu (7), slug (antalya) ya da "tum" (81 il)\n` +
-      `  gun   bugun | yarin | ikisi\n\n` +
+      `  gun   bugun | yarin | ikisi (varsayılan: bugun)\n\n` +
       `Seçenekler:\n` +
       `  --dry-run           hiçbir şey yazma, ne bulduğunu göster\n` +
       `  --api <url>         API adresi (varsayılan http://localhost:5173)\n` +
       `  --user <ad>         panel kullanıcı adı (varsayılan ADMIN_USERNAME ortam değişkeni)\n` +
       `  --pass <parola>     panel parolası (verilmezse ADMIN_PASSWORD ortam değişkeni)\n` +
       `  --delay <ms>        istekler arası bekleme (varsayılan 800)\n` +
-      `  --max-coords <n>    il-gün başına koordinat isteği (varsayılan 40)\n` +
-      `  --coord-budget <n>  KOŞU başına toplam koordinat isteği (varsayılan 400)\n\n`,
+      `  --max-coords <n>    il-gün başına koordinat isteği (varsayılan 200)\n` +
+      `  --coord-budget <n>  KOŞU başına toplam koordinat isteği (varsayılan 3000)\n\n`,
   );
-  process.exit(positional.length < 2 ? 1 : 0);
+  process.exit(positional.length < 1 ? 1 : 0);
 }
 
-const [ilArg, gunArg] = positional;
+const [ilArg, gunArg = 'bugun'] = positional;
 
 const DAYS = { bugun: ['bugun'], yarin: ['yarin'], ikisi: ['bugun', 'yarin'] }[gunArg];
 
@@ -84,11 +84,11 @@ if (!DAYS) {
 
 const API = String(flags.api ?? 'http://localhost:5173').replace(/\/$/, '');
 const DELAY = Number(flags.delay ?? 800);
-const MAX_COORDS = Number(flags['max-coords'] ?? 40);
+const MAX_COORDS = Number(flags['max-coords'] ?? 200);
 const DRY = Boolean(flags['dry-run']);
 
-/** Koşunun tamamı için koordinat isteği bütçesi. Backfill günlere yayılsın diye. */
-let coordBudget = Number(flags['coord-budget'] ?? 400);
+/** Koşunun tamamı için koordinat isteği bütçesi. */
+let coordBudget = Number(flags['coord-budget'] ?? 3000);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

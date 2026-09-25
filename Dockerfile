@@ -31,6 +31,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV DB_PATH=/app/data/nobetci.sqlite
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+
+# Scraper ve Playwright için Chromium ve font paketleri
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
 
 # Yalnızca prodüksiyon için gereken paketleri yükle
 COPY package.json package-lock.json ./

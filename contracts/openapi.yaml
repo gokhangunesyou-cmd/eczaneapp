@@ -374,7 +374,7 @@ paths:
                   method: GET
                   headers:
                     - name: User-Agent
-                      value: "nobetci-eczane/0.1 (+https://nobetcieczane.becayisler.com)"
+                      value: "nobetci-eczane/0.1 (+https://nobetci-eczane.becayisler.com)"
       responses:
         "200":
           description: |

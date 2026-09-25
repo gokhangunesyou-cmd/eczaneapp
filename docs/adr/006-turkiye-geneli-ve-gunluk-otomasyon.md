@@ -1,9 +1,9 @@
 # ADR-006 — Türkiye geneli kapsam ve günlük otomatik çekim
 
-- **Durum:** Kabul edildi
-- **Tarih:** 2026-08-08
-- **Değiştirdiği karar:** ADR-004 (kısmen — "cron yok, dış fetch yok" maddesi)
-- **Dayandığı karar:** ADR-005 (e-Devlet kaynağı ve kaynağa saygı sınırları)
+- **Durum:** Aşılmış / Güncellendi (Bkz. ADR-008: GitHub Actions yerine in-process saatlik scheduler ve Node.js + SQLite)
+- **Tarih:** 2026-08-08 (Güncellendi: 2026-09-25)
+- **Değiştirdiği karar:** ADR-004
+- **Sonraki karar:** ADR-008 (Node.js dahili zamanlayıcı ve SQLite)
 
 ---
 

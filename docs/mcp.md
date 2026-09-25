@@ -53,7 +53,7 @@ npx tsx src/mcp/index.ts
       "command": "npx",
       "args": ["-y", "tsx", "/Users/gokhangunes/Development/nobetci-eczane/src/mcp/index.ts"],
       "env": {
-        "NOBETCI_ECZANE_API_URL": "https://nobetcieczane.becayisler.com"
+        "NOBETCI_ECZANE_API_URL": "https://nobetci-eczane.becayisler.com"
       }
     }
   }
@@ -72,7 +72,7 @@ npx tsx src/mcp/index.ts
       "args": ["run", "mcp"],
       "cwd": "/Users/gokhangunes/Development/nobetci-eczane",
       "env": {
-        "NOBETCI_ECZANE_API_URL": "https://nobetcieczane.becayisler.com"
+        "NOBETCI_ECZANE_API_URL": "https://nobetci-eczane.becayisler.com"
       }
     }
   }
@@ -93,4 +93,4 @@ Yapay zekanız entegre edildikten sonra aşağıdaki gibi Türkçe doğal dilde 
 
 ## ⚙️ Ortam Değişkenleri
 
-- `NOBETCI_ECZANE_API_URL`: İstek atılacak API adresi (varsayılan: `https://nobetcieczane.becayisler.com`). Yerel sunucuyu kullanmak isterseniz `http://localhost:8787` belirleyebilirsiniz.
+- `NOBETCI_ECZANE_API_URL`: İstek atılacak API adresi (varsayılan: `https://nobetci-eczane.becayisler.com`). Yerel Node.js sunucusunu kullanmak isterseniz `http://localhost:3000` belirleyebilirsiniz.

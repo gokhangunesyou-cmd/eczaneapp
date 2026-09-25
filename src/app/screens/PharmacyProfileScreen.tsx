@@ -48,7 +48,7 @@ export function PharmacyProfileScreen({ citySlug, districtSlug, pharmacyKey, onB
     };
   }, [pharmacyKey]);
 
-  const BASE_URL = 'https://nobetcieczane.becayisler.com';
+  const BASE_URL = 'https://nobetci-eczane.becayisler.com';
   const canonicalUrl = `${BASE_URL}/${citySlug}-${districtSlug}-${pharmacyKey}-eczanesi`;
 
   const pharmacyName = pharmacy
