@@ -61,7 +61,7 @@ const [ilArg, gunArg = 'ikisi'] = positional;
 const API = String(flags.api ?? 'http://localhost:5173').replace(/\/$/, '');
 const DELAY = Number(flags.delay ?? 1000);
 const DRY = Boolean(flags['dry-run']);
-const HEADLESS = flags.headless !== false && flags.headless !== 'false';
+const HEADLESS = Boolean(flags.headless); // Varsayılan: false (Cloudflare Turnstile bypass için)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -141,13 +141,15 @@ async function scrapeCity(city, page, now) {
   await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(DELAY);
 
-  const title = await page.title();
+  let title = await page.title();
   if (title.includes('Just a moment') || title.includes('Bir dakika') || title.includes('Attention Required')) {
     // Cloudflare turnstile bekle
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(5000);
+    title = await page.title();
   }
 
   const listHtml = await page.content();
+  if (DRY) console.log(`  [debug] Title: "${title}", HTML length: ${listHtml.length}`);
 
   // 2. Harita sayfasını çek (koordinatlar için)
   let mapHtml = '';
@@ -222,7 +224,7 @@ async function scrapeCity(city, page, now) {
 async function main() {
   await apiLogin();
 
-  let allCities = CITIES;
+  let allCities = CITIES_81;
   if (!DRY) {
     try {
       const res = await fetch(`${API}/api/cities`);
@@ -256,7 +258,8 @@ async function main() {
   );
   console.log(`  tarayıcı: ${execPath || '(playwright varsayılanı)'}\n`);
 
-  const browser = await chromium.launch({
+  const userDataDir = process.env.CHROME_USER_DATA_DIR || '/tmp/chrome-scraper-profile';
+  const context = await chromium.launchPersistentContext(userDataDir, {
     executablePath: execPath,
     headless: HEADLESS,
     args: [
@@ -264,16 +267,14 @@ async function main() {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
+      '--no-first-run',
+      '--no-default-browser-check',
     ],
-  });
-
-  const context = await browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+    ignoreDefaultArgs: ['--enable-automation'],
     viewport: { width: 1280, height: 800 },
   });
 
-  const page = await context.newPage();
+  const page = context.pages()[0] || (await context.newPage());
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
   });
@@ -303,7 +304,7 @@ async function main() {
     }
   }
 
-  await browser.close();
+  await context.close();
 
   console.log('\n─────────────────────────────────');
   console.log(`  başarılı il : ${results.length} / ${cities.length}`);

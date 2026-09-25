@@ -33,9 +33,11 @@ ENV PORT=3000
 ENV DB_PATH=/app/data/nobetci.sqlite
 ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
-# Scraper ve Playwright için Chromium ve font paketleri
+# Scraper ve Playwright için Chromium, Xvfb ve font paketleri
 RUN apk add --no-cache \
     chromium \
+    xvfb \
+    dbus \
     nss \
     freetype \
     harfbuzz \

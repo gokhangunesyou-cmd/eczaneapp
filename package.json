@@ -31,6 +31,7 @@
     "scrape": "node scripts/scrape-edevlet.mjs",
     "scrape:eczaneler": "node scripts/scrape-eczaneler.mjs",
     "scrape:v2": "node scripts/scrape-eczaneler-v2.mjs",
+    "scrape:v2:docker": "xvfb-run -a node scripts/scrape-eczaneler-v2.mjs",
     "scrape:edevlet": "node scripts/scrape-edevlet.mjs",
     "mcp": "tsx src/mcp/index.ts"
   },
